@@ -32,6 +32,12 @@ export class RangeError extends Error{
   }
 }
 
+export class TypeError extends Error{
+  constructor(msg){
+    super(msg);
+  }
+}
+
 export function errorToStatus(error) {
   switch (error.constructor.name) {
     case "TypeError":
@@ -47,6 +53,42 @@ export function errorToStatus(error) {
   }
 }
 
+export async function setDbInfo(emailAddress, user){
+    const usersCollection = await users()
+    const updatedUser = await usersCollection.updateOne(
+      { emailAddress: emailAddress },
+      { $set: user },
+      { returnDocument: "after" }
+  );
+  if (updatedUser.modifiedCount === 0){
+      throw new DBError("Could update DB");
+  }
+  return;
+}
+export async function handleErrorChecking(emailAddress) {
+  if (!emailAddress) {
+    throw new TypeError("You must provide your email");
+  }
+  emailAddress = exportedMethods.emailValidation(emailAddress);
+  let usersCollection = undefined;
+  let user = undefined;
+  try {
+    usersCollection = await users();
+    user = await usersCollection.findOne({ emailAddress: emailAddress });
+  } catch {
+    throw new DBError("Unable to query DB.");
+  }
+  if (user === null) {
+    throw new ResourcesError("No user with provided email found.");
+  }
+
+  if (!user.steamAccountUsername || !user.steamProfileLink) {
+    throw new RangeError(
+      "You must link a Steam Account to get your account's games"
+    );
+  }
+  return {user: user, usersCollection: usersCollection};
+}
 export async function updateFriendsList(senderData, recipientData) {
   const usersCollection = await users();
   let recipientFriends = recipientData.friendList;
@@ -160,19 +202,6 @@ export async function getUserInfo(senderName, recipientName) {
 }
 
 const exportedMethods = {
-  integerCheck(arg, { min = -Infinity, max = Infinity } = {}) {
-    if (arg === undefined)
-      throw new TypeError(`No value passed to integerCheck: ${arg}`);
-    if (typeof arg !== "number") throw new TypeError(`${arg} must be a number`);
-    if (!Number.isInteger(arg))
-      throw new RangeError(`${arg} is not an integer`);
-    if (arg < min)
-      throw new RangeError(`${arg} is below min allowed value (${min})`);
-    if (arg > max)
-      throw new RangeError(`${arg} is above max allowed value (${max})`);
-
-    return arg;
-  },
   stringCheck(arg) {
     if (arg === undefined) {
       throw new TypeError(
@@ -260,12 +289,5 @@ const exportedMethods = {
   },
 };
 
-export async function friendRoute(req, res, friendFun) {
-  let userName = exportedMethods.stringCheck(req.params.username);
-  if (userName === req.session.user?.username)
-    throw new RangeError("You can't be friends with yourself.");
-  let ownUserName = exportedMethods.stringCheck(req.session.user.username);
-  return await friendFun(ownUserName, userName);
-}
 
 export default exportedMethods;
