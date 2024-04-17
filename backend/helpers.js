@@ -26,6 +26,12 @@ export class ResourcesError extends Error {
   }
 }
 
+export class RangeError extends Error{
+  constructor(msg){
+    super(msg);
+  }
+}
+
 export function errorToStatus(error) {
   switch (error.constructor.name) {
     case "TypeError":

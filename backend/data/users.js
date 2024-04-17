@@ -2,10 +2,16 @@ import { users } from "../config/mongoCollections.js";
 import validation, {
   DBError,
   ResourcesError,
+  RangeError
 } from "../helpers.js";
+import { verifySteamAccount } from "./steam.js";
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 const saltRounds = 16;
+/*const client = await createClient()
+    .on("error", (err) => console.log("redis client error", err))
+    .connect();*/
+
 
 export const registerUser = async (username, emailAddress, password) => {
   validation.inputCheck(username, emailAddress, password);
@@ -90,3 +96,85 @@ export const loginUser = async (emailAddress, password) => {
     friendCount: user.friendCount    
   };
 };
+
+export const linkSteamAccount = async (emailAddress, steamId) => {
+  if (!emailAddress) {
+    throw new TypeError("You must provide your email");
+  }
+  if(!steamId){
+    throw new TypeError("You must provide your steamId");
+  }
+  emailAddress = validation.emailValidation(emailAddress);
+  let usersCollection = undefined;
+  let user = undefined;
+  try {
+    usersCollection = await users();
+    user = await usersCollection.findOne({ emailAddress: emailAddress });
+  } catch {
+    throw new DBError("Unable to query DB.");
+  }
+  if (!user === null) {
+    throw new ResourcesError("No user with provided email found.");
+  }
+
+  if (user.steamAccountUsername || user.profileurl) {
+    throw new RangeError(
+      "You already have a linked Steam Account"
+    );
+  }
+  const steamUserData = await verifySteamAccount(steamId);
+  
+  user.steamAccountUsername = steamUserData.personaname
+  user.steamProfileLink = steamUserData.profileurl
+
+  const updatedUser = await usersCollection.updateOne(
+    { emailAddress: emailAddress },
+    { $set: user },
+    { returnDocument: "after" }
+  );
+
+  if (updatedUser.modifiedCount === 0)
+    throw new DBError("Could not link Steam Account successfully");
+
+  return { steamAccountLinked: steamUserData.profileurl, status: true };
+  
+}
+
+export const unlinkSteamAccount = async (emailAddress) => {
+  if (!emailAddress) {
+    throw new TypeError("You must provide your email");
+  }
+  emailAddress = validation.emailValidation(emailAddress);
+  let usersCollection = undefined;
+  let user = undefined;
+  try {
+    usersCollection = await users();
+    user = await usersCollection.findOne({ emailAddress: emailAddress });
+  } catch {
+    throw new DBError("Unable to query DB.");
+  }
+  if (!user) {
+    throw new ResourcesError("No user with provided email found.");
+  }
+
+  if (!user.steamAccountUsername || !user.steamProfileLink) {
+    throw new RangeError(
+      "You do not have a linked Steam Account"
+    );
+  }
+  const steamUrl = user.steamProfileLink
+  user.steamAccountUsername = null
+  user.steamProfileLink = null
+
+  const updatedUser = await usersCollection.updateOne(
+    { emailAddress: emailAddress },
+    { $set: user },
+    { returnDocument: "after" }
+  );
+
+  if (updatedUser.modifiedCount === 0)
+    throw new DBError("Could not unlink Steam Account successfully");
+
+  return { steamAccountUnlinked: steamUrl, status: true };
+  
+}
