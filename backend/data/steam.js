@@ -156,20 +156,20 @@ export const getPlayerAchievmentsForGame = async(emailAddress, gameToFind) =>{
     const gameId = game.appid
     
     try {
-        const response = await axios.get(`http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${gameId}&key=${apiKey}&steamid=${userSteamId}&name=true`);
+        const response = await axios.get(`http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${gameId}&key=${apiKey}&steamid=${userSteamId}`);
         
         if (response.status === 200) {
             const achievementData = response.data.playerstats.achievements;
             if(!achievementData){
                 throw new ResourcesError("Achievements not found")
             }else{
-                const gameSchemas = await getGameShema(gameId)
+                const gameSchema = await getGameShema(gameId)
                 const results = []
-                gameSchemas.forEach((game) => {
-                    const achievement = achievementData.find(entry => entry.apiname === game.apiName)
+                gameSchema.forEach((achievement) => {
+                    const achievementStatus = achievementData.find(entry => entry.apiname === achievement.apiName)
                     results.push({
-                        name: game.displayName,
-                        achieved: achievement.achieved
+                        name: achievement.displayName,
+                        achieved: achievementStatus.achieved
                     })
                 })
                 const totalAchieved = results.reduce((acc, obj) => obj.achieved ? acc + 1 : acc, 0);
@@ -180,7 +180,7 @@ export const getPlayerAchievmentsForGame = async(emailAddress, gameToFind) =>{
                     totalAchievements: results.length,
                     achievements: results}
                 await client.set("Player Achievement Data: " + emailAddress + " " + game.name, JSON.stringify(returnData))
-                await client.expire("Player Achievement Data: " + emailAddress + " " + game.name, JSON.stringify(returnData), 300) //Set with a 5 minute expire time if new achievements get unlocked
+                await client.expire("Player Achievement Data: " + emailAddress + " " + game.name, 300) //Set with a 5 minute expire time if new achievements get unlocked
                 return returnData
             }
         }
