@@ -260,8 +260,8 @@ export const matchOnAchievements = async (emailAddress, game, matchType) =>{
             const achievementData = await mapAchievementStates(userAchievementStates, otherUserAchievementStates)
             matchedUsers.push({
                 username: user.username,
-                otherUser: otherUser.username,
-                otherUserSteamProfile: otherUser.steamProfileLink,
+                matchedUser: otherUser.username,
+                matchedUserSteamProfile: otherUser.steamProfileLink,
                 achievementsNeitherHas: achievementData.neitherUserAchieved,
                 achievementsUserHasOtherDoesnt: achievementData.userAchieved,
                 achievementsOtherHasUserDoesnt: achievementData.otherUserAchieved
@@ -294,6 +294,30 @@ export const matchOnAchievements = async (emailAddress, game, matchType) =>{
             userB.achievementsOtherHasUserDoesnt.length - userA.achievementsOtherHasUserDoesnt.length
         })
     }
+}
+
+export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
+    const dbInfo = await handleErrorChecking(emailAddress)
+    const usersWithGame = await getAllUsersWhoOwnGame(game)
+    const user = dbInfo.user
+    const userGameStats = await getUserOwnedGame(user.emailAddress, game)
+    const matchedUsers = []
+    for(const otherUser of usersWithGame){
+        if(otherUser.emailAddress !== user.emailAddress){
+            const otherUserGameStats = await getUserOwnedGame(otherUser.emailAddress, game)
+            const hourComparison = Math.abs(userGameStats.playtime_forever - otherUserGameStats.playtime_forever) / 60
+            if(hourComparison < 150){
+                matchedUsers.push({
+                    username: user.username,
+                    matchedUser: otherUser.username,
+                    matchedUserSteamProfile: otherUser.steamProfileLink,
+                    matchUserPlaytime: parseInt(otherUserGameStats.playtime_forever/60) + " hours " + parseInt(otherUserGameStats.playtime_forever%60) + " minutes"
+                })
+            }
+        }
+    }
+
+    return matchedUsers
 }
 
 //Helper function that returns achievements that neither user has, and achievements that one user has and the other doesnt.
@@ -331,6 +355,7 @@ export const mapAchievementStates = async (userStates, otherUserStates) => {
     }
 }
 
+//Helper to sort achievements based on whether or not they have been achieved
 export const getAchievedStates = async (achievementList)=>{
     if(!achievementList){throw new ResourcesError("No achievements supplied in getAchievedStates")}
     let achieved = []
@@ -369,7 +394,7 @@ export const getGameShema = async (gameId) => {
         if (response.status === 200) {
             const data = response.data.game;
             if(!data){
-                throw new ResourcesError("Achievements not found")
+                throw new ResourcesError("Achievements not found: Make sure the game youre supplying has achievements and your profile's achievement visibility is public")
             }else{
                 
                 let achievementData = []
@@ -385,3 +410,4 @@ export const getGameShema = async (gameId) => {
         throw new ResourcesError("Cannot get game schema")
     }
 }
+
