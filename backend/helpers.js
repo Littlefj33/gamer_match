@@ -89,6 +89,15 @@ export async function handleErrorChecking(emailAddress) {
   }
   return {user: user, usersCollection: usersCollection};
 }
+export const retrieveGamesOwnedFromDb = async (emailAddress) => {
+  const dbInfo = await handleErrorChecking(emailAddress)
+  const user = dbInfo.user
+  if(user.gamesOwned.length >0 ){
+      return user.gamesOwned
+  }else{
+      throw new ResourcesError("User does not have any owned games")
+  }
+}
 export async function updateFriendsList(senderData, recipientData) {
   const usersCollection = await users();
   let recipientFriends = recipientData.friendList;
@@ -202,6 +211,13 @@ export async function getUserInfo(senderName, recipientName) {
 }
 
 const exportedMethods = {
+  matchType(arg){
+    arg = this.stringCheck(arg)
+    const validTypes = "neitherAchieved , iAchieved , theyAchieved"
+    if(!validTypes.includes(arg)){
+      throw new RangeError("Matchtype can only be on of the following options: neitherAchieved, iAchieved, theyAchieved")
+    }
+  },
   stringCheck(arg) {
     if (arg === undefined) {
       throw new TypeError(

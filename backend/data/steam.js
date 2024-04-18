@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { users } from "../config/mongoCollections.js";
-import { ResourcesError, handleErrorChecking, setDbInfo} from '../helpers.js';
+import { ResourcesError, handleErrorChecking, setDbInfo, retrieveGamesOwnedFromDb} from '../helpers.js';
 import {createClient} from 'redis'
+import { users } from '../config/mongoCollections.js';
 import validation from '../helpers.js';
 const client = await createClient()
     .on("error", (err) => console.log("redis client error", err))
@@ -216,4 +216,141 @@ export const getGameShema = async (gameId) => {
     }catch(e){
         throw new ResourcesError("Cannot get game schema")
     }
+}
+
+export const matchTwoUsersOnGame = async (user1emailAddress, user2emailAddress) => {
+    const user1OwnedGames = await retrieveGamesOwnedFromDb(user1emailAddress);
+    const user2OwnedGames = await retrieveGamesOwnedFromDb(user2emailAddress);
+
+    const matchingGames = [];
+
+    for(const game of user1OwnedGames){
+        let matchingGame = user2OwnedGames.find(findGame => findGame.name === game.name)
+        if(matchingGame){
+            matchingGames.push(matchingGame)
+        }
+    }
+
+    return matchingGames
+}
+
+export const findTop3MatchesOnLibrary = async (emailAddress)=>{
+    const dbInfo = await handleErrorChecking(emailAddress)
+    const user = dbInfo.user
+    const usersCollection = dbInfo.usersCollection
+    const allUsers = await usersCollection.find({}).toArray()
+
+    const commonLibraries = []
+    for(const otherUser of allUsers){
+        if(user.emailAddress !== otherUser.emailAddress){
+            const matchingGames = await matchTwoUsersOnGame(user.emailAddress, otherUser.emailAddress)
+            commonLibraries.push({
+                username: user.username, 
+                userMatched: otherUser.username,
+                userMatchedProfile: otherUser.steamProfileLink,
+                gamesShared: matchingGames,
+                numGamesShared: matchingGames.length })
+        }   
+    }
+
+    return commonLibraries.sort((a, b) => b.numGamesShared - a.numGamesShared).slice(0,3)
+}
+
+export const matchOnAchievements = async (emailAddress, game, matchType) =>{
+    const dbInfo = await handleErrorChecking(emailAddress)
+    game = validation.stringCheck(game)
+    validation.matchType(matchType)
+    const user = dbInfo.user
+    const allUsersWithGame = await getAllUsersWhoOwnGame(game);
+    const userAchievements = await getPlayerAchievmentsForGame(emailAddress, game)
+    const userAchievementStates = await getAchievedStates(userAchievements)
+    const matchedUsers = []
+    for(const otherUser of allUsersWithGame){
+        if(user.emailAddress !== otherUser.emailAddress){
+            const otherUserAchievements = await getPlayerAchievmentsForGame(otherUser.emailAddress, game)
+            const otherUserAchievementStates = await getAchievedStates(otherUserAchievements)
+            const achievementData = await mapAchievementStates(userAchievementStates, otherUserAchievementStates)
+            matchedUsers.push({
+                username: user.username,
+                otherUser: otherUser.username,
+                otherUserSteamProfile: otherUser.steamProfileLink,
+                achievementsNeitherHas: achievementData.neitherUserAchieved,
+                achievementsUserHasOtherDoesnt: achievementData.userAchieved,
+                achievementsOtherHasUserDoesnt: achievementData.otherUserAchieved
+            })
+        }
+    }
+
+    if(matchType === 'neitherAchieved'){
+        return matchedUsers.sort((userA, userB) =>{
+            userB.achievementsNeitherHas.length - userA.achievementsNeitherHas.length
+        })
+    }
+    else if(matchType === 'iAchieved'){
+        return matchedUsers.sort((userA, userB) =>{
+            userB.achievementsUserHasOtherDoesnt.length - userA.achievementsUserHasOtherDoesnt.length
+        })
+    }
+    if(matchType === 'theyAchieved'){
+        return matchedUsers.sort((userA, userB) =>{
+            userB.achievementsOtherHasUserDoesnt.length - userA.achievementsOtherHasUserDoesnt.length
+        })
+    }
+}
+
+export const mapAchievementStates = async (userStates, otherUserStates) => {
+    if(!userStates || !otherUserStates){
+        throw new ResourcesError("You must provide both user's achievements")
+    }
+    const neitherAchieved = [];
+    const userAchieved = [];
+    const otherUserAchieved = [];
+
+    
+    userStates.notAchieved.forEach(item => {
+        if (!otherUserStates.achieved.some(achievement => achievement.name === item.name)) {
+            neitherAchieved.push(item.name);
+        }
+    });
+    userStates.achieved.forEach(item => {
+        if (!otherUserStates.achieved.some(achievement => achievement.name === item.name)) {
+            userAchieved.push(item.name);
+        }
+    });
+
+    otherUserStates.achieved.forEach(item => {
+        if (!userStates.achieved.some(obj => obj.name === item.name)) {
+            otherUserAchieved.push(item.name);
+        }
+    });
+
+    return{
+        neitherUserAchieved: neitherAchieved, 
+        userAchieved: userAchieved, 
+        otherUserAchieved: otherUserAchieved
+    }
+}
+
+export const getAchievedStates = async (achievementList)=>{
+    if(!achievementList){throw new ResourcesError("No achievements supplied in getAchievedStates")}
+    let achieved = []
+    let notAchieved = []
+    const achievementArray = achievementList.achievements
+
+    achieved = achievementArray.filter(obj => obj.achieved === 1)
+    notAchieved = achievementArray.filter(obj => obj.achieved === 0)
+    return {achieved: achieved, notAchieved: notAchieved}
+}
+
+export const getAllUsersWhoOwnGame = async (gameName) =>{
+    const usersCollection = await users();
+    const allUsers = await usersCollection.find({}).toArray()
+    let usersWithGame = []
+    allUsers.forEach((user)=>{
+        const userGames = user.gamesOwned
+        const gameFound = userGames.find(game => game.name === gameName)
+        if(gameFound)usersWithGame.push(user)
+    })
+
+    return usersWithGame
 }
