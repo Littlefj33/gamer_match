@@ -89,6 +89,15 @@ export async function handleErrorChecking(emailAddress) {
     }
     return { user: user, usersCollection: usersCollection };
 }
+export const retrieveGamesOwnedFromDb = async (emailAddress) => {
+  const dbInfo = await handleErrorChecking(emailAddress)
+  const user = dbInfo.user
+  if(user.gamesOwned.length >0 ){
+      return user.gamesOwned
+  }else{
+      throw new ResourcesError("User does not have any owned games")
+  }
+}
 export async function updateFriendsList(senderData, recipientData) {
     const usersCollection = await users();
     let recipientFriends = recipientData.friendList;
@@ -150,10 +159,11 @@ export async function updateSentPendingRequests(
     const insertPending = {
         pendingRequests: pendingRequests,
     };
-
-    const insertSent = {
+  
+  const insertSent = {
         sentRequests: sentRequests,
     };
+
 
     const updatePending = await usersCollection.updateOne(
         { username: targetUsername },
@@ -174,6 +184,30 @@ export async function updateSentPendingRequests(
 
     return true;
 }
+
+
+const exportedMethods = {
+  matchType(arg){
+    arg = this.stringCheck(arg)
+    const validTypes = "neitherAchieved , iAchieved , theyAchieved"
+    if(!validTypes.includes(arg)){
+      throw new RangeError("Matchtype can only be on of the following options: neitherAchieved, iAchieved, theyAchieved")
+    }
+  },
+  stringCheck(arg) {
+    if (arg === undefined) {
+      throw new TypeError(
+        `You must provide a string input for your parameter ${arg}`
+      );
+    } else if (typeof arg !== "string") {
+      throw new TypeError(`${arg} must be a string`);
+    } else if (arg.trim().length === 0) {
+      throw new RangeError(`string inputs cannot be empty space`);
+    }
+    return arg.trim();
+  },
+\
+ 
 export async function getUserInfo(senderName, recipientName) {
     senderName = exportedMethods.stringCheck(senderName);
     recipientName = exportedMethods.stringCheck(recipientName);
