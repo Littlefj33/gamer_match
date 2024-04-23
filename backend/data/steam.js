@@ -9,14 +9,18 @@ const client = await createClient()
     .connect();
 const apiKey = "C0FE0FB620850FD036A71B7373F47917";
 
-//function to check if a steam user exists and returns their profile data
+//Function to check if a steam user exists and returns their profile data
 export const getSteamUser = async (steamId) => {
     steamId = validation.stringCheck(steamId);
     try {
+        const cacheExists = await client.exists("User Data: " + steamId);
+        if (cacheExists) {
+            const userGameData = await client.get("User Data: " + steamId);
+            return JSON.parse(userGameData);
+        }
         const response = await axios.get(
             `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${steamId}`
         );
-
         if (response.status === 200) {
             const data = response.data;
             if (data.response.players.length === 0) {
@@ -25,6 +29,11 @@ export const getSteamUser = async (steamId) => {
                 );
             } else {
                 const playerData = data.response.players[0];
+                await client.set(
+                    "User Data: " + steamId,
+                    JSON.stringify(playerData)
+                );
+                await client.expire("User Data: " + steamId, 1800); //set expire time to half hour in case user changes profile data
                 return playerData;
             }
         }
@@ -33,14 +42,15 @@ export const getSteamUser = async (steamId) => {
     }
 };
 
+//Function that gets all games a steam user owns
 export const getSteamUsersGames = async (emailAddress) => {
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
     const steamId = user.steamId;
     try {
-        const cacheExists = await client.exists("Games owned" + steamId);
+        const cacheExists = await client.exists("Games Owned: " + steamId);
         if (cacheExists) {
-            const userGameData = await client.get("Games owned" + steamId);
+            const userGameData = await client.get("Games Owned: " + steamId);
             return JSON.parse(userGameData);
         }
         const response = await axios.get(
@@ -57,10 +67,10 @@ export const getSteamUsersGames = async (emailAddress) => {
                 user.gamesOwned = userGameData;
                 await setDbInfo(emailAddress, user);
                 await client.set(
-                    "Games owned" + steamId,
+                    "Games Owned: " + steamId,
                     JSON.stringify(userGameData)
                 );
-                await client.expire("Games owned" + steamId, 1800); //set half hour expire time in case a user buys new games
+                await client.expire("Games Owned: " + steamId, 1800); //set half hour expire time in case a user buys new games
                 return userGameData;
             }
         }
@@ -69,16 +79,15 @@ export const getSteamUsersGames = async (emailAddress) => {
     }
 };
 
-
 //Function that grabs a steam users recently played games in the last two weeks
 export const getRecentlyPlayed = async (emailAddress) =>{
     const dbInfo = await handleErrorChecking(emailAddress)
     const user = dbInfo.user
     const steamId = user.steamId;
     try {
-        const cacheExists = await client.exists("Recently played" + steamId);
+        const cacheExists = await client.exists("Recently Played: " + steamId);
         if (cacheExists) {
-            const userGameData = await client.get("Recently played" + steamId);
+            const userGameData = await client.get("Recently Played: " + steamId);
             const jsonRes = JSON.parse(userGameData);
             return jsonRes;
         }
@@ -95,11 +104,12 @@ export const getRecentlyPlayed = async (emailAddress) =>{
                 const userRecentlyPlayedGameData = data.response.games;
                 user.recentlyPlayed = userRecentlyPlayedGameData;
                 await setDbInfo(emailAddress, user);
-                client.set(
-                    "Recently played" + steamId,
-                    JSON.stringify(userGameData)
+                await client.set(
+                    "Recently Played: " + steamId,
+                    JSON.stringify(userRecentlyPlayedGameData)
                 );
-                return userGameData;
+                await client.expire("Recently Played: " + steamId, 1800); //set half hour expire time in case a user plays new games
+                return userRecentlyPlayedGameData;
             }
         }
     } catch (e) {
@@ -107,14 +117,14 @@ export const getRecentlyPlayed = async (emailAddress) =>{
     }
 };
 
-
 //Function that gets a users top 5 most played games
 export const getTopFiveGames = async (emailAddress) =>{
     const dbInfo = await handleErrorChecking(emailAddress)
     const user = dbInfo.user
-    const cacheExists = await client.exists("Most played: " + emailAddress)
+    const userId = user.steamId;
+    const cacheExists = await client.exists("Most played: " + userId)
         if(cacheExists){
-            const userGameData = await client.get("Most played: " + emailAddress);
+            const userGameData = await client.get("Most played: " + userId);
             return JSON.parse(userGameData)
         }
     if(user.gamesOwned.length > 0){
@@ -124,19 +134,19 @@ export const getTopFiveGames = async (emailAddress) =>{
             user.top5MostPlayed = userGames;
             await setDbInfo(emailAddress, user);
             await client.set(
-                "Most played: " + emailAddress,
+                "Most played: " + userId,
                 JSON.stringify(userGames)
             );
-            await client.expire("Most played: " + emailAddress, 3600); //set expire time to one hour in case rankings change
+            await client.expire("Most played: " + userId, 3600); //set expire time to one hour in case rankings change
             return userGames.slice(0, userGames.length);
         }
         user.top5MostPlayed = userGames.slice(0, 5);
         await setDbInfo(emailAddress, user);
         await client.set(
-            "Most played: " + emailAddress,
+            "Most played: " + userId,
             JSON.stringify(userGames.slice(0, 5))
         );
-        await client.expire("Most played: " + emailAddress, 3600); //set expire time to one hour in case rankings change
+        await client.expire("Most played: " + userId, 3600); //set expire time to one hour in case rankings change
         return userGames.slice(0, 5);
     } else {
         return;
