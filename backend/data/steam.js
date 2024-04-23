@@ -121,10 +121,10 @@ export const getRecentlyPlayed = async (emailAddress) =>{
 export const getTopFiveGames = async (emailAddress) =>{
     const dbInfo = await handleErrorChecking(emailAddress)
     const user = dbInfo.user
-    const userId = user.steamId;
-    const cacheExists = await client.exists("Most played: " + userId)
+    const steamId = user.steamId;
+    const cacheExists = await client.exists("Most played: " + steamId)
         if(cacheExists){
-            const userGameData = await client.get("Most played: " + userId);
+            const userGameData = await client.get("Most played: " + steamId);
             return JSON.parse(userGameData)
         }
     if(user.gamesOwned.length > 0){
@@ -134,19 +134,19 @@ export const getTopFiveGames = async (emailAddress) =>{
             user.top5MostPlayed = userGames;
             await setDbInfo(emailAddress, user);
             await client.set(
-                "Most played: " + userId,
+                "Most played: " + steamId,
                 JSON.stringify(userGames)
             );
-            await client.expire("Most played: " + userId, 3600); //set expire time to one hour in case rankings change
+            await client.expire("Most played: " + steamId, 3600); //set expire time to one hour in case rankings change
             return userGames.slice(0, userGames.length);
         }
         user.top5MostPlayed = userGames.slice(0, 5);
         await setDbInfo(emailAddress, user);
         await client.set(
-            "Most played: " + userId,
+            "Most played: " + steamId,
             JSON.stringify(userGames.slice(0, 5))
         );
-        await client.expire("Most played: " + userId, 3600); //set expire time to one hour in case rankings change
+        await client.expire("Most played: " + steamId, 3600); //set expire time to one hour in case rankings change
         return userGames.slice(0, 5);
     } else {
         return;
@@ -155,9 +155,9 @@ export const getTopFiveGames = async (emailAddress) =>{
 
 //Function that gets a game from a users library
 export const getUserOwnedGame = async (emailAddress, gameToFind) => {
-    const cacheExists = await client.exists(emailAddress + ": " + gameToFind);
+    const cacheExists = await client.exists(gameToFind);
     if (cacheExists) {
-        const gameFound = await client.get(emailAddress + ": " + gameToFind);
+        const gameFound = await client.get(gameToFind);
         return JSON.parse(gameFound);
     }
     gameToFind = validation.stringCheck(gameToFind);
@@ -180,7 +180,7 @@ export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     } else {
         await client.set(
             gameToFind,
-            JSON.stringify(emailAddress + ": " + gameFound)
+            JSON.stringify(gameFound)
         );
         return gameFound;
     }
@@ -440,7 +440,6 @@ export const getAllUsersWhoOwnGame = async (gameName) =>{
 
     return usersWithGame
 }
-
 
 //Helper function to get achievement display names
 export const getGameShema = async (gameId) => {
