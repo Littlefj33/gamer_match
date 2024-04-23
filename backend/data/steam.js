@@ -33,7 +33,6 @@ export const getSteamUser = async (steamId) => {
     }
 };
 
-]
 export const getSteamUsersGames = async (emailAddress) => {
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
