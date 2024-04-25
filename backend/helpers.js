@@ -184,29 +184,6 @@ export async function updateSentPendingRequests(
 
     return true;
 }
-
-
-const exportedMethods = {
-  matchType(arg){
-    arg = this.stringCheck(arg)
-    const validTypes = "neitherAchieved , iAchieved , theyAchieved"
-    if(!validTypes.includes(arg)){
-      throw new RangeError("Matchtype can only be on of the following options: neitherAchieved, iAchieved, theyAchieved")
-    }
-  },
-  stringCheck(arg) {
-    if (arg === undefined) {
-      throw new TypeError(
-        `You must provide a string input for your parameter ${arg}`
-      );
-    } else if (typeof arg !== "string") {
-      throw new TypeError(`${arg} must be a string`);
-    } else if (arg.trim().length === 0) {
-      throw new RangeError(`string inputs cannot be empty space`);
-    }
-    return arg.trim();
-  },
-\
  
 export async function getUserInfo(senderName, recipientName) {
     senderName = exportedMethods.stringCheck(senderName);
@@ -236,6 +213,14 @@ export async function getUserInfo(senderName, recipientName) {
 }
 
 const exportedMethods = {
+    matchType(arg){
+        arg = this.stringCheck(arg)
+        const validTypes = "neitherAchieved , iAchieved , theyAchieved"
+        if(!validTypes.includes(arg)){
+          throw new RangeError("Matchtype can only be on of the following options: neitherAchieved, iAchieved, theyAchieved")
+        }
+    },
+
     stringCheck(arg) {
         if (arg === undefined) {
             throw new TypeError(
