@@ -213,8 +213,8 @@ export const isAccountLinked = async (emailAddress) => {
     }
 
     if (!user.steamAccountUsername || !user.steamProfileLink) {
-        return { accountLinked: false };
+        return false;
     } else {
-        return { accountLinked: true };
+        return true;
     }
 };
