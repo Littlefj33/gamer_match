@@ -194,3 +194,27 @@ export const unlinkSteamAccount = async (emailAddress) => {
 
     return { steamAccountUnlinked: steamUrl, status: true };
 };
+
+export const isAccountLinked = async (emailAddress) => {
+    if (!emailAddress) {
+        throw new TypeError("You must provide your email");
+    }
+    emailAddress = validation.emailValidation(emailAddress);
+    let usersCollection = undefined;
+    let user = undefined;
+    try {
+        usersCollection = await users();
+        user = await usersCollection.findOne({ emailAddress: emailAddress });
+    } catch {
+        throw new DBError("Unable to query DB.");
+    }
+    if (!user) {
+        throw new ResourcesError("No user with provided email found.");
+    }
+
+    if (!user.steamAccountUsername || !user.steamProfileLink) {
+        return { accountLinked: false };
+    } else {
+        return { accountLinked: true };
+    }
+};
