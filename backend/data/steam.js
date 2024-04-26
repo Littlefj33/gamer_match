@@ -3,15 +3,32 @@ import { ResourcesError, handleErrorChecking, setDbInfo, retrieveGamesOwnedFromD
 import {createClient} from 'redis'
 import { users } from '../config/mongoCollections.js';
 import validation from '../helpers.js';
-import API_KEY from '../.env'
+const API_KEY = "C0FE0FB620850FD036A71B7373F47917"
 const client = await createClient()
     .on("error", (err) => console.log("redis client error", err))
     .connect();
 
 
 //Function to check if a steam user exists and returns their profile data
+export const convertVanityUrl = async (customId) => {
+    customId = validation.stringCheck(customId)
+    try{
+        const response = await axios.get(`http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${API_KEY}&vanityurl=${customId}`)    
+        if(response.status === 200){
+            const returnId = response.data.response.steamid
+            return returnId
+        }
+    }catch(e){
+        throw new ResourcesError("Custom Id does not exist")
+    }
+    return
+}
 export const getSteamUser = async (steamId) => {
     steamId = validation.stringCheck(steamId);
+    const checkId = parseInt(steamId)
+    if(isNaN(checkId)){
+        steamId = await convertVanityUrl(steamId)
+    }
     try {
         const cacheExists = await client.exists("User Data: " + steamId);
         if (cacheExists) {
@@ -44,7 +61,7 @@ export const getSteamUser = async (steamId) => {
 
 //Function that gets all games a steam user owns
 export const getSteamUsersGames = async (emailAddress) => {
-    const emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress)
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
     const steamId = user.steamId;
@@ -92,7 +109,7 @@ export const getSteamUsersGames = async (emailAddress) => {
 
 //Function that grabs a steam users recently played games in the last two weeks
 export const getRecentlyPlayed = async (emailAddress) =>{
-    const emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress)
     const dbInfo = await handleErrorChecking(emailAddress)
     const user = dbInfo.user
     const steamId = user.steamId;
@@ -111,7 +128,7 @@ export const getRecentlyPlayed = async (emailAddress) =>{
             if (data.response.games.length === 0) {
                 user.recentlyPlayed = []
                 await setDbInfo(emailAddress, user)
-                return []
+                return [];
             } else {
                 const userRecentlyPlayedGameData = data.response.games;
                 if(userRecentlyPlayedGameData == user.recentlyPlayed){
@@ -142,7 +159,7 @@ export const getRecentlyPlayed = async (emailAddress) =>{
 
 //Function that gets a users top 5 most played games
 export const getTopFiveGames = async (emailAddress) =>{
-    const emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress)
     const dbInfo = await handleErrorChecking(emailAddress)
     const user = dbInfo.user
     const steamId = user.steamId;
@@ -201,7 +218,7 @@ export const getTopFiveGames = async (emailAddress) =>{
 
 //Function that gets a game from a users library
 export const getUserOwnedGame = async (emailAddress, gameToFind) => {
-    const emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress)
     const cacheExists = await client.exists(gameToFind);
     if (cacheExists) {
         const gameFound = await client.get(gameToFind);
@@ -235,7 +252,7 @@ export const getUserOwnedGame = async (emailAddress, gameToFind) => {
 
 
 export const getPlayerAchievmentsForGame = async (emailAddress, gameToFind) => {
-    const emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress)
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
     const game = await getUserOwnedGame(emailAddress, gameToFind);
@@ -325,7 +342,7 @@ export const matchTwoUsersOnLibrary = async (user1emailAddress, user2emailAddres
 
 //Finds the top 3 users you share the most games with
 export const findTop3MatchesOnLibrary = async (emailAddress)=>{
-    const emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress)
     const dbInfo = await handleErrorChecking(emailAddress)
     const user = dbInfo.user
     const usersCollection = dbInfo.usersCollection
@@ -349,7 +366,7 @@ export const findTop3MatchesOnLibrary = async (emailAddress)=>{
 
 //Matches users based on achievements, this one is really messy and comments explain how it works, but this can use some cleanup
 export const matchOnAchievements = async (emailAddress, game, matchType) =>{
-    const emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress)
     const dbInfo = await handleErrorChecking(emailAddress)
     game = validation.stringCheck(game)
     validation.matchType(matchType)
@@ -407,7 +424,7 @@ export const matchOnAchievements = async (emailAddress, game, matchType) =>{
 }
 
 export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
-    const emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress)
     const dbInfo = await handleErrorChecking(emailAddress)
     const usersWithGame = await getAllUsersWhoOwnGame(game)
     const user = dbInfo.user
