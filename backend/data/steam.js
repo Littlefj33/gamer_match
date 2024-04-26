@@ -109,9 +109,9 @@ export const getRecentlyPlayed = async (emailAddress) =>{
         if (response.status === 200) {
             const data = response.data;
             if (data.response.games.length === 0) {
-                throw new ResourcesError(
-                    `Steam account ${user.steamAccountUsername} does not have any recently played games!`
-                );
+                user.recentlyPlayed = []
+                await setDbInfo(emailAddress, user)
+                return []
             } else {
                 const userRecentlyPlayedGameData = data.response.games;
                 if(userRecentlyPlayedGameData == user.recentlyPlayed){
