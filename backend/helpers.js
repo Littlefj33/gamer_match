@@ -65,6 +65,13 @@ export async function setDbInfo(emailAddress, user) {
     }
     return;
 }
+
+export async function getDbInfo(emailAddress){
+    emailAddress = exportedMethods.emailValidation(emailAddress)
+    const usersCollection = await users();
+    const user = await usersCollection.findOne({emailAddress: emailAddress})
+    return user
+}
 export async function handleErrorChecking(emailAddress) {
     if (!emailAddress) {
         throw new TypeError("You must provide your email");
