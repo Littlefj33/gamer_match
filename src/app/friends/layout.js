@@ -1,4 +1,5 @@
 import "../globals.css";
+import Header from "@/lib/header/header";
 import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -11,6 +12,8 @@ export const metadata = {
 export default function Layout({ children }) {
     return (
         <>
+            <Header />
+
             <div className="w-full h-screen bg-sky-100 text-black">
                 {children}
             </div>

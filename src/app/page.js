@@ -1,7 +1,11 @@
+import Header from "@/lib/header/header";
+
 export default function Home() {
     return (
         <>
-            <div className="w-full h-screen bg-sky-100 text-black">
+            <Header />
+
+            <div className="w-full h-screen text-black">
                 <h1>Home Page</h1>
             </div>
         </>

@@ -1,3 +1,4 @@
+import Header from "@/lib/header/header";
 import "../globals.css";
 import { Inter } from "next/font/google";
 
@@ -11,6 +12,8 @@ export const metadata = {
 export default function Layout({ children }) {
     return (
         <>
+            <Header />
+
             <div className="w-full h-screen bg-sky-100 text-black">
                 {children}
             </div>
