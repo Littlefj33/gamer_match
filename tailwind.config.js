@@ -4,6 +4,8 @@ module.exports = {
         "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
         "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
         "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/utils/**/*.{js,ts,jsx,tsx,mdx}",
     ],
     theme: {
         extend: {
@@ -16,8 +18,8 @@ module.exports = {
                 "persian-blue": "#0A2737",
                 "light-blue": "#B0DEEE",
                 tangerine: "#F7A072",
-                platinum: "#E2E2E2",
                 bittersweet: "#EE6352",
+                platinum: "#E2E2E2",
             },
         },
     },
