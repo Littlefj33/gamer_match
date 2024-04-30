@@ -11,7 +11,7 @@ export const metadata = {
 export default function Layout({ children }) {
     return (
         <>
-            <div className="w-full h-screen bg-sky-100 text-black">
+            <div className="w-full h-screen bg-platinum text-black">
                 {children}
             </div>
         </>
