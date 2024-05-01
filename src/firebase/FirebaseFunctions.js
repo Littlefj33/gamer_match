@@ -29,8 +29,10 @@ import {
   }
   
   async function doSignInWithEmailAndPassword(email, password) {
+    console.log(email, password);
     let auth = getAuth();
-    await signInWithEmailAndPassword(auth, email, password);
+    let temp = await signInWithEmailAndPassword(auth, email, password);
+    console.log(temp);
   }
   
   async function doSocialSignIn() {
