@@ -340,17 +340,19 @@ export const matchTwoUsersOnLibrary = async (user1emailAddress, user2emailAddres
     return matchingGames
 }
 
-//Finds the top 3 users you share the most games with
-export const findTop3MatchesOnLibrary = async (emailAddress)=>{
+//Finds the top users you share the most games with
+export const findTopMatchesOnLibrary = async (emailAddress)=>{
     emailAddress = validation.emailValidation(emailAddress)
     const dbInfo = await handleErrorChecking(emailAddress)
     const user = dbInfo.user
     const usersCollection = dbInfo.usersCollection
     const allUsers = await usersCollection.find({}).toArray()
-
-    const commonLibraries = []
+    const userFriends = user.friendList;
+    let commonLibraries = []
     for(const otherUser of allUsers){
         if(user.emailAddress !== otherUser.emailAddress){
+            const result = userFriends.find(item => item.username === otherUser.username)
+            if(!result){
             const matchingGames = await matchTwoUsersOnLibrary(user.emailAddress, otherUser.emailAddress)
             commonLibraries.push({
                 username: user.username, 
@@ -358,10 +360,11 @@ export const findTop3MatchesOnLibrary = async (emailAddress)=>{
                 userMatchedProfile: otherUser.steamProfileLink,
                 gamesShared: matchingGames,
                 numGamesShared: matchingGames.length })
+            }
         }   
     }
 
-    return commonLibraries.sort((a, b) => b.numGamesShared - a.numGamesShared).slice(0,3)
+    return commonLibraries.sort((a, b) => b.numGamesShared - a.numGamesShared)
 }
 
 //Matches users based on achievements, this one is really messy and comments explain how it works, but this can use some cleanup
@@ -372,27 +375,30 @@ export const matchOnAchievements = async (emailAddress, game, matchType) =>{
     validation.matchType(matchType)
     const user = dbInfo.user
     const allUsersWithGame = await getAllUsersWhoOwnGame(game);
-
+    const userFriends = user.friendList;
     //Get all user achievements. This includes names and whether or not it has been achieved
     const userAchievements = await getPlayerAchievmentsForGame(emailAddress, game)
     const userAchievementStates = await getAchievedStates(userAchievements) 
     const matchedUsers = []
     for(const otherUser of allUsersWithGame){
         if(user.emailAddress !== otherUser.emailAddress){
-            //Get all user achievements. This includes names and whether or not it has been achieved
-            const otherUserAchievements = await getPlayerAchievmentsForGame(otherUser.emailAddress, game)
-            const otherUserAchievementStates = await getAchievedStates(otherUserAchievements)
+            const result = userFriends.find(item => item.username === otherUser.username)
+            if(!result){
+                //Get all user achievements. This includes names and whether or not it has been achieved
+                const otherUserAchievements = await getPlayerAchievmentsForGame(otherUser.emailAddress, game)
+                const otherUserAchievementStates = await getAchievedStates(otherUserAchievements)
 
-            //Find all achievements neither user has, and achievements that one user has and the other doesnt
-            const achievementData = await mapAchievementStates(userAchievementStates, otherUserAchievementStates)
-            matchedUsers.push({
-                username: user.username,
-                matchedUser: otherUser.username,
-                matchedUserSteamProfile: otherUser.steamProfileLink,
-                achievementsNeitherHas: achievementData.neitherUserAchieved,
-                achievementsUserHasOtherDoesnt: achievementData.userAchieved,
-                achievementsOtherHasUserDoesnt: achievementData.otherUserAchieved
-            })
+                //Find all achievements neither user has, and achievements that one user has and the other doesnt
+                const achievementData = await mapAchievementStates(userAchievementStates, otherUserAchievementStates)
+                matchedUsers.push({
+                    username: user.username,
+                    matchedUser: otherUser.username,
+                    matchedUserSteamProfile: otherUser.steamProfileLink,
+                    achievementsNeitherHas: achievementData.neitherUserAchieved,
+                    achievementsUserHasOtherDoesnt: achievementData.userAchieved,
+                    achievementsOtherHasUserDoesnt: achievementData.otherUserAchieved
+                })
+            }
         }
     }
 
@@ -429,18 +435,22 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
     const usersWithGame = await getAllUsersWhoOwnGame(game)
     const user = dbInfo.user
     const userGameStats = await getUserOwnedGame(user.emailAddress, game)
+    const userFriends = user.friendList;
     const matchedUsers = []
     for(const otherUser of usersWithGame){
         if(otherUser.emailAddress !== user.emailAddress){
-            const otherUserGameStats = await getUserOwnedGame(otherUser.emailAddress, game)
-            const hourComparison = Math.abs(userGameStats.playtime_forever - otherUserGameStats.playtime_forever) / 60
-            if(hourComparison < 150){
-                matchedUsers.push({
-                    username: user.username,
-                    matchedUser: otherUser.username,
-                    matchedUserSteamProfile: otherUser.steamProfileLink,
-                    matchUserPlaytime: parseInt(otherUserGameStats.playtime_forever/60) + " hours " + parseInt(otherUserGameStats.playtime_forever%60) + " minutes"
-                })
+            const result = userFriends.find(item => item.username === otherUser.username)
+            if(!result){
+                const otherUserGameStats = await getUserOwnedGame(otherUser.emailAddress, game)
+                const hourComparison = Math.abs(userGameStats.playtime_forever - otherUserGameStats.playtime_forever) / 60
+                if(hourComparison < 150){
+                    matchedUsers.push({
+                        username: user.username,
+                        matchedUser: otherUser.username,
+                        matchedUserSteamProfile: otherUser.steamProfileLink,
+                        matchUserPlaytime: parseInt(otherUserGameStats.playtime_forever/60) + " hours " + parseInt(otherUserGameStats.playtime_forever%60) + " minutes"
+                    })
+                }
             }
         }
     }
