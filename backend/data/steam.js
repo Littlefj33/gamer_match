@@ -443,19 +443,20 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
             if(!result){
                 const otherUserGameStats = await getUserOwnedGame(otherUser.emailAddress, game)
                 const hourComparison = Math.abs(userGameStats.playtime_forever - otherUserGameStats.playtime_forever) / 60
-                if(hourComparison < 150){
+                if(hourComparison < 100){
                     matchedUsers.push({
                         username: user.username,
                         matchedUser: otherUser.username,
                         matchedUserSteamProfile: otherUser.steamProfileLink,
-                        matchUserPlaytime: parseInt(otherUserGameStats.playtime_forever/60) + " hours " + parseInt(otherUserGameStats.playtime_forever%60) + " minutes"
+                        matchUserPlaytime: parseInt(otherUserGameStats.playtime_forever/60) + " hours " + parseInt(otherUserGameStats.playtime_forever%60) + " minutes",
+                        playtime_forever: otherUserGameStats.playtime_forever
                     })
                 }
             }
         }
     }
 
-    return matchedUsers
+    return matchedUsers.sort((a, b) => b.playtime_forever - a.playtime_forever)
 }
 
 //Helper function that returns achievements that neither user has, and achievements that one user has and the other doesnt.
