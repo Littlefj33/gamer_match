@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Profile from "./Profile";
+import AchievementMatch from "@/lib/matching/AchievementMatch";
+import HoursMatch from "@/lib/matching/HoursMatch";
+import LibrariesMatch from "@/lib/matching/LibrariesMatch";
 
 export default function Match() {
     const [showAchieveForm, setShowAchForm] = useState(false);
@@ -22,6 +25,7 @@ export default function Match() {
         }
     };
 
+
     return (
         <>
             <div className="w-full h-screen bg-platinum text-black">
@@ -36,26 +40,7 @@ export default function Match() {
                             </button>
 
                             {showAchieveForm ? (
-                                <form className="w-full text-black">
-                                    <div className="flex flex-col text-center my-3">
-                                        <label className="mb-4 font-semibold">
-                                            Match Type:
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. I achieved"
-                                                className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
-                                            />
-                                        </label>
-                                        <label className="font-semibold">
-                                            Name of Game:
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Minecraft"
-                                                className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
-                                            />
-                                        </label>
-                                    </div>
-                                </form>
+                                <AchievementMatch email="shinks@mail.com"/>
                             ) : (
                                 <></>
                             )}
@@ -70,36 +55,12 @@ export default function Match() {
                             </button>
 
                             {showHourForm ? (
-                                <form className="w-full text-black ">
-                                    <div className="flex flex-col text-center my-3">
-                                        <label className="mb-4 font-semibold">
-                                            Number of Hours:
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. 230"
-                                                className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
-                                            />
-                                        </label>
-                                        <label className="font-semibold">
-                                            Name of Game:
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Minecraft"
-                                                className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
-                                            />
-                                        </label>
-                                    </div>
-                                </form>
+                                <HoursMatch email="shinks@mail.com"/>
                             ) : (
                                 <></>
                             )}
                         </div>
-
-                        <div className="w-40 h-full flex flex-wrap items-center justify-center mx-10">
-                            <button className="w-full h-full flex items-center justify-center bg-persian-blue rounded-full text-xl ">
-                                Shared Games
-                            </button>
-                        </div>
+                        <LibrariesMatch email="shinks@mail.com"/>
                     </div>
                 </div>
 

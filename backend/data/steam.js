@@ -193,8 +193,7 @@ export const getTopFiveGames = async (emailAddress) =>{
             
         }
         if(user.top5MostPlayed = userGames.slice(0,5)){
-            const user = getDbInfo(emailAddress)
-            await getDbInfo(emailAddress);
+            const user = await getDbInfo(emailAddress)
             await client.set(
                 "Most played: " + steamId,
                 JSON.stringify(user.top5MostPlayed)

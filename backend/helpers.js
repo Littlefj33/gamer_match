@@ -219,6 +219,24 @@ export async function getUserInfo(senderName, recipientName) {
     return { sender, recipient };
 }
 
+export async function getUserByUsername(username) {
+    username = exportedMethods.stringCheck(username);
+
+    username = username.toLowerCase();
+
+    const usersCollection = await users();
+    const user = await usersCollection.findOne({
+        username: username
+    });
+
+    if (!user) {
+        throw new RangeError(`Could not find user: ${username}`);
+    }
+
+    return user;
+
+}
+
 const exportedMethods = {
     matchType(arg){
         arg = this.stringCheck(arg)
