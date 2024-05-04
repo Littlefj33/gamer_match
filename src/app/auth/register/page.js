@@ -1,21 +1,14 @@
 "use client";
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
+import axios from "axios";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
-import {useFormState as useFormState} from 'react-dom';
-import { registerUser } from '../../actions';
 import { doCreateUserWithEmailAndPassword } from "@/firebase/FirebaseFunctions.js";
-const initialState = {
-    displayName: "",
-    email: "",
-    passwordOne: "",
-    passwordTwo: "",
-};
 
 export default function Register() {
     const { currentUser } = useContext(AuthContext);
-    const [state, formAction] = useFormState(registerUser, initialState);
     const [pwMatch, setPwMatch] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleSignUp = async (e) => {
         e.preventDefault();
@@ -27,25 +20,36 @@ export default function Register() {
         }
 
         try {
+            setLoading(true);
             await doCreateUserWithEmailAndPassword(
                 email.value,
                 passwordOne.value,
                 displayName.value
             );
+            await axios.post("/api/auth/register", {
+                displayName: displayName.value,
+                email: email.value,
+                password: passwordOne.value,
+            });
+            setLoading(false);
         } catch (error) {
+            setLoading(false);
             alert(error);
         }
     };
 
     if (currentUser) {
-        redirect("/profile");
+        redirect("/");
+    }
+
+    if (loading) {
+        return <div>Loading...</div>;
     }
 
     return (
         <div>
             {pwMatch && <h4 className="error">{pwMatch}</h4>}
-            {state.message && <h4 className="error">{state.message}</h4>}
-            <form action={formAction} onSubmit={handleSignUp}>
+            <form onSubmit={handleSignUp}>
                 <div className="form-group">
                     <label>
                         Name:
@@ -112,6 +116,11 @@ export default function Register() {
                 </button>
             </form>
             <br />
+            <p>
+                <a href="/auth/login">
+                    Already have an account? Click here to Login!
+                </a>
+            </p>
         </div>
     );
 }

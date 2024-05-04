@@ -1,41 +1,33 @@
 "use client";
 import SocialSignIn from "../SocialSignIn.js";
-import { useContext } from "react";
+import { useState, useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
-import {
-    doSignInWithEmailAndPassword,
-    doPasswordReset,
-} from "@/firebase/FirebaseFunctions.js";
+import { doSignInWithEmailAndPassword } from "@/firebase/FirebaseFunctions.js";
 
 export default function Login() {
     const { currentUser } = useContext(AuthContext);
+    const [loading, setLoading] = useState(false);
 
     const handleLogin = async (event) => {
         event.preventDefault();
         let { email, password } = event.target.elements;
         try {
+            setLoading(true);
             await doSignInWithEmailAndPassword(email.value, password.value);
+            setLoading(false);
         } catch (error) {
+            setLoading(false);
             alert(error);
         }
     };
 
-    const passwordReset = (event) => {
-        event.preventDefault();
-        let email = document.getElementById("email").value;
-        if (email) {
-            doPasswordReset(email);
-            alert("Password reset email was sent");
-        } else {
-            alert(
-                "Please enter an email address below before you click the forgot password link"
-            );
-        }
-    };
-
     if (currentUser) {
-        redirect("/profile");
+        redirect("/");
+    }
+
+    if (loading) {
+        return <div>Loading...</div>;
     }
 
     return (
@@ -74,9 +66,9 @@ export default function Login() {
                     Log in
                 </button>
                 <br />
-                <button className="forgotPassword" onClick={passwordReset}>
-                    Forgot Password
-                </button>
+                <p>
+                    <a href="/auth/register">No account?  Click here to Register!</a>
+                </p>
             </form>
             <SocialSignIn />
         </div>
