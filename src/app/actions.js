@@ -9,7 +9,7 @@ export async function registerUser(prevState, formData) {
     password = formData.get("passwordOne");
 
     try {
-        console.log(await userData.registerUser(username, emailAddress, password));
+        await userData.registerUser(username, emailAddress, password);
     } catch (e) {
         return { message: e };
     }

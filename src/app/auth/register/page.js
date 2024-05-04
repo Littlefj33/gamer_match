@@ -44,6 +44,7 @@ export default function Register() {
     return (
         <div>
             {pwMatch && <h4 className="error">{pwMatch}</h4>}
+            {state.message && <h4 className="error">{state.message}</h4>}
             <form action={formAction} onSubmit={handleSignUp}>
                 <div className="form-group">
                     <label>
