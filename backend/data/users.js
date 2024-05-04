@@ -4,6 +4,15 @@ import { getSteamUser } from "./steam.js";
 import bcrypt from "bcrypt";
 const saltRounds = 16;
 
+export const test = async (username, emailAddress, password) => {
+    console.log(await validation.inputCheck(username, emailAddress, password));
+    emailAddress = emailAddress.toLowerCase();
+    username = username.toLowerCase();
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    return { insertedUser: true };
+}
+
 export const registerUser = async (username, emailAddress, password) => {
     validation.inputCheck(username, emailAddress, password);
     emailAddress = emailAddress.toLowerCase();

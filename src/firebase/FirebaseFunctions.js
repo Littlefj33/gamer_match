@@ -11,7 +11,7 @@ import {
     EmailAuthProvider,
     reauthenticateWithCredential
   } from 'firebase/auth';
-  
+
   async function doCreateUserWithEmailAndPassword(email, password, displayName) {
     const auth = getAuth();
     await createUserWithEmailAndPassword(auth, email, password);

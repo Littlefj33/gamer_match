@@ -2,11 +2,21 @@
 import React, { useContext, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
+import {useFormState as useFormState} from 'react-dom';
+import { registerUser } from '../../actions';
 import { doCreateUserWithEmailAndPassword } from "@/firebase/FirebaseFunctions.js";
+const initialState = {
+    displayName: "",
+    email: "",
+    passwordOne: "",
+    passwordTwo: "",
+};
 
 export default function Register() {
     const { currentUser } = useContext(AuthContext);
+    const [state, formAction] = useFormState(registerUser, initialState);
     const [pwMatch, setPwMatch] = useState("");
+
     const handleSignUp = async (e) => {
         e.preventDefault();
         const { displayName, email, passwordOne, passwordTwo } =
@@ -34,7 +44,7 @@ export default function Register() {
     return (
         <div>
             {pwMatch && <h4 className="error">{pwMatch}</h4>}
-            <form onSubmit={handleSignUp}>
+            <form action={formAction} onSubmit={handleSignUp}>
                 <div className="form-group">
                     <label>
                         Name:
