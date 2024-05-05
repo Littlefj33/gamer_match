@@ -19,8 +19,8 @@ const main = async () => {
     await getSteamUsersGames("twang@mail.com");
     await getRecentlyPlayed("twang@mail.com");
     await getTopFiveGames("twang@mail.com");
-    await getUserOwnedGame("twang@mail.com", "Among Us");
-    await getPlayerAchievmentsForGame("twang@mail.com", "Among Us");
+    await getUserOwnedGame("twang@mail.com", "Nidhogg");
+    await getPlayerAchievmentsForGame("twang@mail.com", "Nidhogg");
     console.log("1/5 Users Seeded");
 
     await registerUser("Aero", "aero@mail.com", "Password123!!!!");
