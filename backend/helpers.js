@@ -256,6 +256,8 @@ const exportedMethods = {
         username = this.usernameValidation(username);
         password = this.passwordValidation(password);
         emailAddress = this.emailValidation(emailAddress);
+
+        return true;
     },
 
     usernameValidation(username) {
