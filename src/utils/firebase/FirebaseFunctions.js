@@ -1,3 +1,4 @@
+import { app } from "./FirebaseConfig";
 import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -9,53 +10,53 @@ import {
     GoogleAuthProvider,
     sendPasswordResetEmail,
     EmailAuthProvider,
-    reauthenticateWithCredential
-  } from 'firebase/auth';
+    reauthenticateWithCredential,
+} from "firebase/auth";
 
-  async function doCreateUserWithEmailAndPassword(email, password, displayName) {
-    const auth = getAuth();
+async function doCreateUserWithEmailAndPassword(email, password, displayName) {
+    const auth = getAuth(app);
     await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(auth.currentUser, {displayName: displayName});
-  }
-  
-  async function doChangePassword(email, oldPassword, newPassword) {
-    const auth = getAuth();
+    await updateProfile(auth.currentUser, { displayName: displayName });
+}
+
+async function doChangePassword(email, oldPassword, newPassword) {
+    const auth = getAuth(app);
     let credential = EmailAuthProvider.credential(email, oldPassword);
     console.log(credential);
     await reauthenticateWithCredential(auth.currentUser, credential);
-  
+
     await updatePassword(auth.currentUser, newPassword);
     await doSignOut();
-  }
-  
-  async function doSignInWithEmailAndPassword(email, password) {
+}
+
+async function doSignInWithEmailAndPassword(email, password) {
     console.log(email, password);
-    let auth = getAuth();
+    let auth = getAuth(app);
     let temp = await signInWithEmailAndPassword(auth, email, password);
     console.log(temp);
-  }
-  
-  async function doSocialSignIn() {
-    let auth = getAuth();
+}
+
+async function doSocialSignIn() {
+    let auth = getAuth(app);
     let socialProvider = new GoogleAuthProvider();
     await signInWithPopup(auth, socialProvider);
-  }
-  
-  async function doPasswordReset(email) {
-    let auth = getAuth();
+}
+
+async function doPasswordReset(email) {
+    let auth = getAuth(app);
     await sendPasswordResetEmail(auth, email);
-  }
-  
-  async function doSignOut() {
-    let auth = getAuth();
+}
+
+async function doSignOut() {
+    let auth = getAuth(app);
     await signOut(auth);
-  }
-  
-  export {
+}
+
+export {
     doCreateUserWithEmailAndPassword,
     doSocialSignIn,
     doSignInWithEmailAndPassword,
     doPasswordReset,
     doSignOut,
-    doChangePassword
-  };
+    doChangePassword,
+};
