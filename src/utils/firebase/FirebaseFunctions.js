@@ -21,7 +21,6 @@ async function doCreateUserWithEmailAndPassword(email, password, displayName) {
 async function doChangePassword(email, oldPassword, newPassword) {
     const auth = getAuth();
     let credential = EmailAuthProvider.credential(email, oldPassword);
-    console.log(credential);
     await reauthenticateWithCredential(auth.currentUser, credential);
 
     await updatePassword(auth.currentUser, newPassword);
@@ -32,7 +31,6 @@ async function doSignInWithEmailAndPassword(email, password) {
     console.log(email, password);
     let auth = getAuth();
     let temp = await signInWithEmailAndPassword(auth, email, password);
-    // console.log(temp);
 }
 
 async function doSocialSignIn() {
