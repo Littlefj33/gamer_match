@@ -2,7 +2,7 @@
 import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
-import { doSignOut } from "@/firebase/FirebaseFunctions.js";
+import { doSignOut } from "@/utils/firebase/FirebaseFunctions.js";
 
 export default function Profile() {
     const { currentUser } = useContext(AuthContext);

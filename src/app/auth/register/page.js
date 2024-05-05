@@ -1,36 +1,40 @@
 "use client";
-import { useContext, useState } from "react";
-import axios from "axios";
-import { AuthContext } from "@/context/AuthContext";
+
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { doCreateUserWithEmailAndPassword } from "@/firebase/FirebaseFunctions.js";
+
+import { useContext, useState } from "react";
+import { AuthContext } from "@/context/AuthContext";
+import { registerUser } from "../actions";
 
 export default function Register() {
     const { currentUser } = useContext(AuthContext);
-    const [pwMatch, setPwMatch] = useState("");
     const [loading, setLoading] = useState(false);
+    const [errorObj, setErrorObj] = useState({});
 
     const handleSignUp = async (e) => {
         e.preventDefault();
-        const { displayName, email, passwordOne, passwordTwo } =
-            e.target.elements;
-        if (passwordOne.value !== passwordTwo.value) {
-            setPwMatch("Passwords do not match");
-            return false;
-        }
+        let { username, email, password, confirmPassword } = e.target;
+
+        username = username.value;
+        email = email.value;
+        password = password.value;
+        confirmPassword = confirmPassword.value;
+
+        /**
+         * TODO:
+         * - Client-side validation
+         */
 
         try {
             setLoading(true);
-            await doCreateUserWithEmailAndPassword(
-                email.value,
-                passwordOne.value,
-                displayName.value
-            );
-            await axios.post("/api/auth/register", {
-                displayName: displayName.value,
-                email: email.value,
-                password: passwordOne.value,
+
+            await registerUser({
+                username,
+                email,
+                password,
             });
+
             setLoading(false);
         } catch (error) {
             setLoading(false);
@@ -47,29 +51,24 @@ export default function Register() {
     }
 
     return (
-        <div>
-            {pwMatch && <h4 className="error">{pwMatch}</h4>}
+        <div className="bg-white text-black">
             <form onSubmit={handleSignUp}>
-                <div className="form-group">
+                <div>
                     <label>
                         Name:
-                        <br />
                         <input
-                            className="form-control"
                             required
-                            name="displayName"
+                            name="username"
                             type="text"
                             placeholder="Name"
                             autoFocus={true}
                         />
                     </label>
                 </div>
-                <div className="form-group">
+                <div>
                     <label>
                         Email:
-                        <br />
                         <input
-                            className="form-control"
                             required
                             name="email"
                             type="email"
@@ -77,14 +76,12 @@ export default function Register() {
                         />
                     </label>
                 </div>
-                <div className="form-group">
+                <div>
                     <label>
                         Password:
-                        <br />
                         <input
-                            className="form-control"
-                            id="passwordOne"
-                            name="passwordOne"
+                            id="password"
+                            name="password"
                             type="password"
                             placeholder="Password"
                             autoComplete="off"
@@ -92,13 +89,11 @@ export default function Register() {
                         />
                     </label>
                 </div>
-                <div className="form-group">
+                <div>
                     <label>
                         Confirm Password:
-                        <br />
                         <input
-                            className="form-control"
-                            name="passwordTwo"
+                            name="confirmPassword"
                             type="password"
                             placeholder="Confirm Password"
                             autoComplete="off"
@@ -106,21 +101,31 @@ export default function Register() {
                         />
                     </label>
                 </div>
-                <button
-                    className="button"
-                    id="submitButton"
-                    name="submitButton"
-                    type="submit"
-                >
+                <button id="submitButton" type="submit">
                     Sign Up
                 </button>
             </form>
-            <br />
-            <p>
-                <a href="/auth/login">
-                    Already have an account? Click here to Login!
-                </a>
-            </p>
+
+            {Object.keys(errorObj).length !== 0 ? (
+                <div className="text-red-500">
+                    <h2>ERROR:</h2>
+                    <ul>
+                        {Object.keys(errorObj).map((key, i) => {
+                            return (
+                                <li key={i}>
+                                    {key}: {errorObj[key]}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            ) : (
+                <></>
+            )}
+
+            <Link href="/auth/login">
+                Already have an account? Click here to Login!
+            </Link>
         </div>
     );
 }

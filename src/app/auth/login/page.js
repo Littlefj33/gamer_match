@@ -1,20 +1,32 @@
 "use client";
-import SocialSignIn from "../SocialSignIn.js";
+
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useState, useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { redirect } from "next/navigation";
-import { doSignInWithEmailAndPassword } from "@/firebase/FirebaseFunctions.js";
+import { loginUser } from "../actions.js";
+import SocialSignIn from "./SocialSignIn.jsx";
 
 export default function Login() {
     const { currentUser } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
+    const [errorObj, setErrorObj] = useState({});
 
     const handleLogin = async (event) => {
         event.preventDefault();
-        let { email, password } = event.target.elements;
+        let { email, password } = event.target;
+
+        email = email.value;
+        password = password.value;
+
+        /**
+         * TODO:
+         * - Client-side validation
+         */
+
         try {
             setLoading(true);
-            await doSignInWithEmailAndPassword(email.value, password.value);
+            await loginUser({ email, password });
             setLoading(false);
         } catch (error) {
             setLoading(false);
@@ -32,11 +44,10 @@ export default function Login() {
 
     return (
         <div>
-            <form className="form" onSubmit={handleLogin}>
-                <div className="form-group">
+            <form onSubmit={handleLogin}>
+                <div>
                     <label>
                         Email Address:
-                        <br />
                         <input
                             name="email"
                             id="email"
@@ -47,11 +58,9 @@ export default function Login() {
                         />
                     </label>
                 </div>
-                <br />
-                <div className="form-group">
+                <div>
                     <label>
                         Password:
-                        <br />
                         <input
                             name="password"
                             type="password"
@@ -65,14 +74,30 @@ export default function Login() {
                 <button className="button" type="submit">
                     Log in
                 </button>
-                <br />
-                <p>
-                    <a href="/auth/register">
-                        No account? Click here to Register!
-                    </a>
-                </p>
             </form>
+
+            {Object.keys(errorObj).length !== 0 ? (
+                <div className="text-red-500">
+                    <h2>ERROR:</h2>
+                    <ul>
+                        {Object.keys(errorObj).map((key, i) => {
+                            return (
+                                <li key={i}>
+                                    {key}: {errorObj[key]}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            ) : (
+                <></>
+            )}
+
             <SocialSignIn />
+
+            <Link href="/auth/register">
+                No account? Click here to Register!
+            </Link>
         </div>
     );
 }
