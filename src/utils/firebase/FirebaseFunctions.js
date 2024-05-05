@@ -1,4 +1,3 @@
-import { app } from "./FirebaseConfig";
 import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -14,13 +13,13 @@ import {
 } from "firebase/auth";
 
 async function doCreateUserWithEmailAndPassword(email, password, displayName) {
-    const auth = getAuth(app);
+    const auth = getAuth();
     await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(auth.currentUser, { displayName: displayName });
 }
 
 async function doChangePassword(email, oldPassword, newPassword) {
-    const auth = getAuth(app);
+    const auth = getAuth();
     let credential = EmailAuthProvider.credential(email, oldPassword);
     console.log(credential);
     await reauthenticateWithCredential(auth.currentUser, credential);
@@ -31,24 +30,24 @@ async function doChangePassword(email, oldPassword, newPassword) {
 
 async function doSignInWithEmailAndPassword(email, password) {
     console.log(email, password);
-    let auth = getAuth(app);
+    let auth = getAuth();
     let temp = await signInWithEmailAndPassword(auth, email, password);
-    console.log(temp);
+    // console.log(temp);
 }
 
 async function doSocialSignIn() {
-    let auth = getAuth(app);
+    let auth = getAuth();
     let socialProvider = new GoogleAuthProvider();
     await signInWithPopup(auth, socialProvider);
 }
 
 async function doPasswordReset(email) {
-    let auth = getAuth(app);
+    let auth = getAuth();
     await sendPasswordResetEmail(auth, email);
 }
 
 async function doSignOut() {
-    let auth = getAuth(app);
+    let auth = getAuth();
     await signOut(auth);
 }
 

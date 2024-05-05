@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { useContext, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { registerUser } from "../actions";
+import { doCreateUserWithEmailAndPassword } from "@/utils/firebase/FirebaseFunctions";
 
 export default function Register() {
     const { currentUser } = useContext(AuthContext);
@@ -29,11 +30,13 @@ export default function Register() {
         try {
             setLoading(true);
 
-            await registerUser({
+            let response = await registerUser({
                 username,
                 email,
                 password,
             });
+
+            await doCreateUserWithEmailAndPassword(email, password, username);
 
             setLoading(false);
         } catch (error) {

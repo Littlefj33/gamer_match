@@ -6,6 +6,7 @@ import { useState, useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { loginUser } from "../actions.js";
 import SocialSignIn from "./SocialSignIn.jsx";
+import { doSignInWithEmailAndPassword } from "@/utils/firebase/FirebaseFunctions.js";
 
 export default function Login() {
     const { currentUser } = useContext(AuthContext);
@@ -26,12 +27,18 @@ export default function Login() {
 
         try {
             setLoading(true);
-            await loginUser({ email, password });
+
+            let response = await loginUser({ email, password });
+            await doSignInWithEmailAndPassword(email, password);
+
             setLoading(false);
         } catch (error) {
             setLoading(false);
             alert(error);
         }
+        // if(currentUser){
+        //     redirect("/");
+        // }
     };
 
     if (currentUser) {
