@@ -15,31 +15,33 @@ export default function Register() {
     const [errorObj, setErrorObj] = useState({});
     const [isLinked, setIsLinked] = useState(false);
 
-    useEffect(() => {
-        const checkAccountLink = async () => {
-            try {
-                setLoading(true);
-                const mongoResponse = await isAccountLinked({
-                    emailAddress: currentUser.email,
-                });
-                if (mongoResponse.success) {
-                    setIsLinked(true);
-                    setLoading(false);
-                } else {
-                    setIsLinked(false);
-                    setLoading(false);
-                }
-            } catch (error) {
-                setLoading(false);
-                alert(error);
-            }
-        };
-
-        if (currentUser) {
-            checkAccountLink();
-        } else {
-            redirect("/");
+    const linkStatus = async () => {
+        let emailAddress = currentUser.email;
+        let emailAddressValidation = emailValidation(emailAddress);
+        if (emailAddressValidation.isValid == false) {
+            setErrorObj(emailAddressValidation.errors);
+            setLoading(false);
+            return;
         }
+
+        try {
+            setLoading(true);
+            let mongoResponse = await isAccountLinked({ emailAddress });
+            if (mongoResponse.success == false) {
+                setErrorObj({ 0: mongoResponse.error });
+                setLoading(false);
+                return;
+            }
+            setIsLinked(mongoResponse);
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            alert(error);
+        }
+    }
+
+    useEffect(() => {
+        linkStatus();
     }, []);
 
     const handleLink = async (e) => {
@@ -66,15 +68,16 @@ export default function Register() {
         try {
             setLoading(true);
             let mongoResponse = await linkSteamAccount({
-                emailAddress,
-                steamId,
+            emailAddress,
+            steamId,
             });
             if (mongoResponse.success == false) {
-                setErrorObj({ 0: mongoResponse.error });
-                setLoading(false);
-                return;
+            setErrorObj({ 0: mongoResponse.error });
+            setLoading(false);
+            return;
             }
             setLoading(false);
+            window.location.reload();
         } catch (error) {
             setLoading(false);
             alert(error);
@@ -101,6 +104,7 @@ export default function Register() {
                 return;
             }
             setLoading(false);
+            window.location.reload();
         } catch (error) {
             setLoading(false);
             alert(error);
