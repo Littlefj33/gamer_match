@@ -28,16 +28,15 @@ export default function Match() {
 
     return (
         <>
-            <div className="w-full h-screen bg-platinum text-black">
-                <div className="w-full h-24 flex flex-wrap items-center justify-center text-white">
-                    <div className="mx-auto h-12 flex flex-wrap justify-bewteen items-center">
-                        <div className="w-40 h-full flex flex-wrap items-center justify-center text-center mx-10">
-                            <button
-                                onClick={() => handleShowForm("achievements")}
-                                className="w-full h-full flex items-center justify-center bg-persian-blue rounded-full text-xl"
-                            >
-                                Achievements
-                            </button>
+            <div className="w-full h-auto flex flex-wrap items-center justify-center text-white">
+                <div className="mx-auto h-full min-h-24 flex flex-wrap justify-bewteen items-center">
+                    <div className="w-40 h-full flex flex-wrap items-center justify-center text-center mx-10 relative">
+                        <button
+                            onClick={() => handleShowForm("achievements")}
+                            className="w-40 h-12 flex items-center justify-center bg-persian-blue rounded-full text-xl"
+                        >
+                            Achievements
+                        </button>
 
                             {showAchieveForm ? (
                                 <AchievementMatch email="shinks@mail.com"/>
@@ -46,13 +45,13 @@ export default function Match() {
                             )}
                         </div>
 
-                        <div className="w-40 h-full flex flex-wrap items-center justify-center mx-10">
-                            <button
-                                onClick={() => handleShowForm("playtime")}
-                                className="w-full h-full flex items-center justify-center bg-persian-blue rounded-full text-xl "
-                            >
-                                Hours Played
-                            </button>
+                    <div className="w-40 h-full flex flex-wrap items-center justify-center text-center mx-10 relative">
+                        <button
+                            onClick={() => handleShowForm("playtime")}
+                            className="w-full h-12 flex items-center justify-center bg-persian-blue rounded-full text-xl "
+                        >
+                            Hours Played
+                        </button>
 
                             {showHourForm ? (
                                 <HoursMatch email="shinks@mail.com"/>
@@ -64,8 +63,7 @@ export default function Match() {
                     </div>
                 </div>
 
-                <Profile />
-            </div>
+            <Profile />
         </>
     );
 }

@@ -4,10 +4,19 @@ import {createClient} from 'redis'
 import { users } from '../config/mongoCollections.js';
 import validation from '../helpers.js';
 const API_KEY = "C0FE0FB620850FD036A71B7373F47917"
-const client = await createClient()
-    .on("error", (err) => console.log("redis client error", err))
-    .connect();
 
+
+
+const client = createClient()
+
+export const updateUserSteamInfo = async(emailAddress) => {
+    emailAddress = validation.emailValidation(emailAddress)
+    await getSteamUsersGames(emailAddress)
+    await getTopFiveGames(emailAddress)
+    await getRecentlyPlayed(emailAddress)
+
+    return "Succesfully updated user's Steam Data"
+}
 
 //Function to check if a steam user exists and returns their profile data
 export const convertVanityUrl = async (customId) => {
@@ -82,7 +91,7 @@ export const getSteamUsersGames = async (emailAddress) => {
                 );
             } else {
                 const userGameData = data.response.games;
-                if(userGameData === user.gamesOwned){
+                if(JSON.stringify(userGameData) === JSON.stringify(user.gamesOwned)){
                     const user = await getDbInfo(emailAddress)
                     await client.set(
                         "Games Owned: " + steamId,
@@ -131,7 +140,7 @@ export const getRecentlyPlayed = async (emailAddress) =>{
                 return [];
             } else {
                 const userRecentlyPlayedGameData = data.response.games;
-                if(userRecentlyPlayedGameData == user.recentlyPlayed){
+                if(JSON.stringify(userRecentlyPlayedGameData) === JSON.stringify(user.recentlyPlayed)){
                     const user = await getDbInfo(emailAddress)
                     await client.set(
                         "Recently Played: " + steamId,
@@ -172,7 +181,7 @@ export const getTopFiveGames = async (emailAddress) =>{
         const userGames = user.gamesOwned;
         userGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
         if (userGames.length < 5) {
-            if(user.top5MostPlayed == userGames){
+            if(JSON.stringify(user.top5MostPlayed) === JSON.stringify(userGames)){
                 const user = await getDbInfo(emailAddress)
                 await client.set(
                     "Most played: " + steamId,
@@ -192,8 +201,10 @@ export const getTopFiveGames = async (emailAddress) =>{
             }
             
         }
-        if(user.top5MostPlayed = userGames.slice(0,5)){
-            const user = await getDbInfo(emailAddress)
+        const top5 = userGames.slice(0,5)
+        if(JSON.stringify(user.top5MostPlayed) === top5){
+            const user = getDbInfo(emailAddress)
+            await getDbInfo(emailAddress);
             await client.set(
                 "Most played: " + steamId,
                 JSON.stringify(user.top5MostPlayed)
@@ -339,6 +350,28 @@ export const matchTwoUsersOnLibrary = async (user1emailAddress, user2emailAddres
     return matchingGames
 }
 
+export const getTrendingGames = async() =>{
+    const usersCollection = await users();
+    const allUsers = await usersCollection.find({}).toArray()
+    let allGames = []
+    allUsers.forEach((user) =>{
+        allGames.push(user.recentlyPlayed)
+    })
+    let trendingGames = {}
+    allGames.forEach((gameArray) => {
+        gameArray.forEach((game) => {
+            trendingGames[game.name] = (trendingGames[game.name] || 0) + 1;
+        })
+    })
+
+    const sortedTrendingArray = Object.entries(trendingGames).sort((a, b) => b[1] - a[1]);
+    let sortedTrendingGames = {}
+    sortedTrendingArray.forEach(function(item){
+        sortedTrendingGames[item[0]]=item[1]
+    })
+
+    return sortedTrendingGames
+}
 //Finds the top users you share the most games with
 export const findTopMatchesOnLibrary = async (emailAddress)=>{
     emailAddress = validation.emailValidation(emailAddress)
@@ -442,7 +475,7 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
             if(!result){
                 const otherUserGameStats = await getUserOwnedGame(otherUser.emailAddress, game)
                 const hourComparison = Math.abs(userGameStats.playtime_forever - otherUserGameStats.playtime_forever) / 60
-                if(hourComparison < 100){
+                if(hourComparison < 25){
                     matchedUsers.push({
                         username: user.username,
                         matchedUser: otherUser.username,
@@ -455,7 +488,7 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
         }
     }
 
-    return matchedUsers.sort((a, b) => b.playtime_forever - a.playtime_forever)
+    return matchedUsers.sort((a, b) => a.playtime_forever - b.playtime_forever)
 }
 
 //Helper function that returns achievements that neither user has, and achievements that one user has and the other doesnt.

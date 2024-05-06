@@ -19,7 +19,7 @@ module.exports = {
                 "light-blue": "#B0DEEE",
                 tangerine: "#F7A072",
                 bittersweet: "#EE6352",
-                platinum: "#E2E2E2",
+                platinum: "#CCDBDC",
             },
         },
     },
