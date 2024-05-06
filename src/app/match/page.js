@@ -33,6 +33,9 @@ export default function Match() {
          */
 
         try {
+            setLoading(true);
+
+            setLoading(false);
         } catch (e) {}
     };
 
