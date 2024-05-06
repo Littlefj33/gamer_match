@@ -1,5 +1,4 @@
 "use server";
-
 import { userData } from "../../../backend/data";
 
 export async function registerUser(formData) {
@@ -16,7 +15,6 @@ export async function registerUser(formData) {
             throw "ERROR: Could not register user";
         }
     } catch (e) {
-        console.log(e);
         return "Register Failed";
     }
 }

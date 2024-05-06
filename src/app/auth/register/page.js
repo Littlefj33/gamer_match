@@ -1,8 +1,7 @@
 "use client";
-
 import Link from "next/link";
+import { usernameInputCheck } from "@/utils/helpers";
 import { redirect } from "next/navigation";
-
 import { useContext, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { registerUser } from "../actions";
@@ -22,22 +21,23 @@ export default function Register() {
         password = password.value;
         confirmPassword = confirmPassword.value;
 
-        /**
-         * TODO:
-         * - Client-side validation
-         */
+        if (password !== confirmPassword) {
+            setErrorObj({ 0: "Passwords do not match" });
+            setLoading(false);
+            return;
+        }
+
+        let validation = usernameInputCheck(username, email, password);
+        if (validation.isValid == false) {
+            setErrorObj(validation.errors);
+            setLoading(false);
+            return;
+        }
 
         try {
             setLoading(true);
-
-            let response = await registerUser({
-                username,
-                email,
-                password,
-            });
-
+            await registerUser({ username, email, password });
             await doCreateUserWithEmailAndPassword(email, password, username);
-
             setLoading(false);
         } catch (error) {
             setLoading(false);
@@ -54,7 +54,7 @@ export default function Register() {
     }
 
     return (
-        <div className="bg-white text-black">
+        <div>
             <form onSubmit={handleSignUp}>
                 <div>
                     <label>
