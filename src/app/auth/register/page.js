@@ -36,7 +36,12 @@ export default function Register() {
 
         try {
             setLoading(true);
-            await registerUser({ username, email, password });
+            let mongoResponse = await registerUser({ username, email, password });
+            if (mongoResponse.success == false) {
+                setErrorObj({ 0: mongoResponse.error });
+                setLoading(false);
+                return;
+            }
             await doCreateUserWithEmailAndPassword(email, password, username);
             setLoading(false);
         } catch (error) {

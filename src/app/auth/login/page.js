@@ -28,7 +28,12 @@ export default function Login() {
 
         try {
             setLoading(true);
-            await loginUser({ email, password });
+            let mongoResponse = await loginUser({ email, password });
+            if (mongoResponse.success == false) {
+                setErrorObj({ 0: mongoResponse.error });
+                setLoading(false);
+                return;
+            }
             await doSignInWithEmailAndPassword(email, password);
             setLoading(false);
         } catch (error) {
