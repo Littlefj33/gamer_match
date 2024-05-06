@@ -13,10 +13,7 @@ export default function Match() {
     const [showAchieveForm, setShowAchForm] = useState(false);
     const [showHourForm, setShowHourForm] = useState(false);
     const [loading, setLoading] = useState(false);
-
     const [matchInfo, setMatchInfo] = useState({});
-    const [curPage, setCurPage] = useState(0);
-    const [totalPages, setTotalPages] = useState(2);
 
     const handleShowForm = (type) => {
         switch (type) {
@@ -54,22 +51,10 @@ export default function Match() {
             });
 
             result = JSON.parse(result);
-            setTotalPages(Math.ceil(result.matchedUsers.length / 5));
             setMatchInfo(result);
             setLoading(false);
         } catch (e) {
             console.log("ERROR", e);
-        }
-    };
-
-    const handlePrevPage = (e) => {
-        if (curPage > 0) {
-            setCurPage(curPage - 1);
-        }
-    };
-    const handleNextPage = (e) => {
-        if (curPage < totalPages - 1) {
-            setCurPage(curPage + 1);
         }
     };
 
@@ -188,40 +173,15 @@ export default function Match() {
                     </div>
                 </div>
             ) : Object.keys(matchInfo).length !== 0 ? (
-                // <div className="flex justify-center items-center">
-                //     <button onClick={handlePrevPage} className="h-2">
-                //         Previous
-                //     </button>
-                //     <div className="flex justify-start mx-10">
-                //         {matchInfo.matchedUsers
-                //             .slice(curPage * 5, (curPage + 1) * 5)
-                //             .map((user, i) => {
-                //                 return (
-                //                     <div key={i} className="mx-5 my-5">
-                //                         <Profile userData={user} />
-                //                     </div>
-                //                 );
-                //             })}
-                //     </div>
-                //     <button onClick={handleNextPage} className="h-2">
-                //         Next
-                //     </button>
-                // </div>
-
                 <div>
-                    <div className="snap-x">
-                        <div className="flex justify-start mx-10 overflow-x-scroll scrollbar">
-                            {matchInfo.matchedUsers.map((user, i) => {
-                                return (
-                                    <div
-                                        key={i}
-                                        className="snap-start mx-5 my-5"
-                                    >
-                                        <Profile userData={user} />
-                                    </div>
-                                );
-                            })}
-                        </div>
+                    <div className="flex justify-start mx-10 overflow-x-scroll scrollbar">
+                        {matchInfo.matchedUsers.map((user, i) => {
+                            return (
+                                <div key={i} className="mx-5 my-5">
+                                    <Profile userData={user} />
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             ) : (
