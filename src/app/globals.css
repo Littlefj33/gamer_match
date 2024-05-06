@@ -25,3 +25,24 @@ body {
         )
         rgb(var(--background-start-rgb));
 }
+
+@layer utilities {
+    .scrollbar::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .scrollbar::-webkit-scrollbar-track {
+        border-radius: 100vh;
+        background: white;
+        border: 3px solid transparent;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb {
+        background: gray;
+        border-radius: 100vh;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgb(122, 122, 122);
+    }
+}
