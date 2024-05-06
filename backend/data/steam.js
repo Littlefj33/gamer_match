@@ -5,9 +5,9 @@ import { users } from '../config/mongoCollections.js';
 import validation from '../helpers.js';
 const API_KEY = "C0FE0FB620850FD036A71B7373F47917"
 
-const client = await createClient()
-    .on("error", (err) => console.log("redis client error", err))
-    .connect();
+
+
+const client = createClient()
 
 export const updateUserSteamInfo = async(emailAddress) => {
     emailAddress = validation.emailValidation(emailAddress)
