@@ -1,11 +1,10 @@
 "use client";
-
 import Link from "next/link";
+import { passwordInputCheck } from "@/utils/helpers";
 import { redirect } from "next/navigation";
 import { useState, useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { loginUser } from "../actions.js";
-import SocialSignIn from "./SocialSignIn.jsx";
 import { doSignInWithEmailAndPassword } from "@/utils/firebase/FirebaseFunctions.js";
 
 export default function Login() {
@@ -13,32 +12,34 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [errorObj, setErrorObj] = useState({});
 
-    const handleLogin = async (event) => {
-        event.preventDefault();
-        let { email, password } = event.target;
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        let { email, password } = e.target;
 
         email = email.value;
         password = password.value;
 
-        /**
-         * TODO:
-         * - Client-side validation
-         */
+        let validation = passwordInputCheck(email, password);
+        if (validation.isValid == false) {
+            setErrorObj(validation.errors);
+            setLoading(false);
+            return;
+        }
 
         try {
             setLoading(true);
-
-            let response = await loginUser({ email, password });
+            let mongoResponse = await loginUser({ email, password });
+            if (mongoResponse.success == false) {
+                setErrorObj({ 0: mongoResponse.error });
+                setLoading(false);
+                return;
+            }
             await doSignInWithEmailAndPassword(email, password);
-
             setLoading(false);
         } catch (error) {
             setLoading(false);
             alert(error);
         }
-        // if(currentUser){
-        //     redirect("/");
-        // }
     };
 
     if (currentUser) {
@@ -99,8 +100,6 @@ export default function Login() {
             ) : (
                 <></>
             )}
-
-            <SocialSignIn />
 
             <Link href="/auth/register">
                 No account? Click here to Register!
