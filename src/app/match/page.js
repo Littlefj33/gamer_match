@@ -2,9 +2,6 @@
 
 import { useState } from "react";
 import Profile from "./Profile";
-import AchievementMatch from "@/lib/matching/AchievementMatch";
-import HoursMatch from "@/lib/matching/HoursMatch";
-import LibrariesMatch from "@/lib/matching/LibrariesMatch";
 
 export default function Match() {
     const [showAchieveForm, setShowAchForm] = useState(false);
@@ -25,7 +22,6 @@ export default function Match() {
         }
     };
 
-
     return (
         <>
             <div className="w-full h-auto flex flex-wrap items-center justify-center text-white">
@@ -38,12 +34,37 @@ export default function Match() {
                             Achievements
                         </button>
 
-                            {showAchieveForm ? (
-                                <AchievementMatch email="shinks@mail.com"/>
-                            ) : (
-                                <></>
-                            )}
-                        </div>
+                        {showAchieveForm ? (
+                            <form className="w-full h-auto absolute top-full left-0 p-2 mt-2 z-10 rounded-lg text-black bg-white border border-black">
+                                <div className="flex flex-col justify-center items-center text-center my-1">
+                                    <label className="mb-4 font-semibold">
+                                        Match Type:
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. I achieved"
+                                            className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
+                                        />
+                                    </label>
+                                    <label className="mb-4 font-semibold">
+                                        Name of Game:
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Minecraft"
+                                            className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
+                                        />
+                                    </label>
+                                    <button
+                                        type="submit"
+                                        className="w-20 bg-persian-blue rounded-full text-white"
+                                    >
+                                        Search
+                                    </button>
+                                </div>
+                            </form>
+                        ) : (
+                            <></>
+                        )}
+                    </div>
 
                     <div className="w-40 h-full flex flex-wrap items-center justify-center text-center mx-10 relative">
                         <button
@@ -53,15 +74,45 @@ export default function Match() {
                             Hours Played
                         </button>
 
-                            {showHourForm ? (
-                                <HoursMatch email="shinks@mail.com"/>
-                            ) : (
-                                <></>
-                            )}
-                        </div>
-                        <LibrariesMatch email="shinks@mail.com"/>
+                        {showHourForm ? (
+                            <form className="w-full h-auto absolute top-full left-0 p-2 mt-2 z-10 rounded-lg text-black bg-white border border-black">
+                                <div className="flex flex-col justify-center items-center text-center my-1">
+                                    <label className="mb-4 font-semibold">
+                                        Number of Hours:
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. 230"
+                                            className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
+                                        />
+                                    </label>
+                                    <label className="mb-4 font-semibold">
+                                        Name of Game:
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Minecraft"
+                                            className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
+                                        />
+                                    </label>
+                                    <button
+                                        type="submit"
+                                        className="w-20 bg-persian-blue rounded-full text-white"
+                                    >
+                                        Search
+                                    </button>
+                                </div>
+                            </form>
+                        ) : (
+                            <></>
+                        )}
+                    </div>
+
+                    <div className="w-40 h-full flex flex-wrap items-center justify-center mx-10">
+                        <button className="w-full h-12 flex items-center justify-center bg-persian-blue rounded-full text-xl ">
+                            Shared Games
+                        </button>
                     </div>
                 </div>
+            </div>
 
             <Profile />
         </>
