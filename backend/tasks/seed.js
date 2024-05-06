@@ -1,4 +1,6 @@
 import { registerUser, linkSteamAccount } from "../data/users.js";
+import { closeConnection, dbConnection } from '../config/mongoConnection.js';
+import {createClient} from 'redis'
 import {
     getSteamUser,
     getSteamUsersGames,
@@ -12,9 +14,24 @@ import {
     acceptFriendRequest
 } from "../data/friends.js";
 
+const client = await createClient()
+    .on("error", (err) => console.log("redis client error", err))
+    .connect();
+
+
 const main = async () => {
+    try {
+        const db = await dbConnection();
+        await db.dropDatabase();
+      } catch (e) {
+        console.log(e);
+      }
+
+      await client.flushAll('ASYNC');
+    
     await registerUser("twang", "twang@mail.com", "Password123!!!!");
     await linkSteamAccount("twang@mail.com", "76561198061876066");
+    console.log("hi")
     await getSteamUser("76561198061876066");
     await getSteamUsersGames("twang@mail.com");
     await getRecentlyPlayed("twang@mail.com");
@@ -69,6 +86,7 @@ const main = async () => {
     console.log("Friend Requests Accepted");
 
     console.log("Program has been seeded successfully!");
+    await closeConnection();
     process.exit();
 };
 
