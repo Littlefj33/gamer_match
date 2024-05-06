@@ -53,7 +53,9 @@ export default function Profile() {
                         </h1>
                         <div className="grid grid-cols-5 gap-4 text-center">
                             <div>
-                                <h3 className="underline">General</h3>
+                                <h3 className="underline font-bold text-lg">
+                                    General
+                                </h3>
                                 <div>
                                     <div>
                                         <p className="font-bold inline">
@@ -102,7 +104,7 @@ export default function Profile() {
                             <div>
                                 {userData.top5MostPlayed.length !== 0 ? (
                                     <div>
-                                        <h3 className="underline">
+                                        <h3 className="underline font-bold text-lg">
                                             Top 5 Games
                                         </h3>
                                         <ul>
@@ -122,7 +124,7 @@ export default function Profile() {
                                     </div>
                                 ) : (
                                     <div>
-                                        <h3 className="underline">
+                                        <h3 className="underline font-bold text-lg">
                                             Top 5 Games
                                         </h3>
                                         <div>
@@ -137,7 +139,7 @@ export default function Profile() {
                             <div>
                                 {userData.recentlyPlayed.length !== 0 ? (
                                     <div>
-                                        <h3 className="underline">
+                                        <h3 className="underline font-bold text-lg">
                                             Recently Played
                                         </h3>
                                         <ul>
@@ -159,7 +161,7 @@ export default function Profile() {
                                     </div>
                                 ) : (
                                     <div>
-                                        <h3 className="underline">
+                                        <h3 className="underline font-bold text-lg">
                                             Recently Played Games
                                         </h3>
                                         <div>
@@ -174,7 +176,7 @@ export default function Profile() {
                             <div>
                                 {userData.gamesOwned.length !== 0 ? (
                                     <div>
-                                        <h3 className="underline">
+                                        <h3 className="underline font-bold text-lg">
                                             Owned Games
                                         </h3>
                                         <ul>
@@ -196,7 +198,7 @@ export default function Profile() {
                                     </div>
                                 ) : (
                                     <div>
-                                        <h3 className="underline">
+                                        <h3 className="underline font-bold text-lg">
                                             Owned Games
                                         </h3>
                                         <div>
@@ -211,7 +213,7 @@ export default function Profile() {
                             <div>
                                 {userData.friendList.length !== 0 ? (
                                     <div>
-                                        <h3 className="underline">
+                                        <h3 className="underline font-bold text-lg">
                                             Friends List: {userData.friendCount}
                                         </h3>
                                         <ul>
@@ -220,9 +222,7 @@ export default function Profile() {
                                                     return (
                                                         <li key={i}>
                                                             <Link
-                                                                href={
-                                                                    friend.username
-                                                                }
+                                                                href={`/profile/${friend.username}`}
                                                             >
                                                                 {
                                                                     friend.username
@@ -236,7 +236,7 @@ export default function Profile() {
                                     </div>
                                 ) : (
                                     <div>
-                                        <h3 className="underline">
+                                        <h3 className="underline font-bold text-lg">
                                             Friends List: {userData.friendCount}
                                         </h3>
                                         <div>
