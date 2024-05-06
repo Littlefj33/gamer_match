@@ -160,6 +160,8 @@ function passwordValidation(password) {
 }
 
 export {
+    stringCheck,
+    emailValidation,
     usernameInputCheck,
-    passwordInputCheck,
+    passwordInputCheck
 };
