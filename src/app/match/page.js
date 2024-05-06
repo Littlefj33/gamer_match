@@ -6,6 +6,7 @@ import Profile from "./Profile";
 export default function Match() {
     const [showAchieveForm, setShowAchForm] = useState(false);
     const [showHourForm, setShowHourForm] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleShowForm = (type) => {
         switch (type) {
@@ -22,8 +23,22 @@ export default function Match() {
         }
     };
 
+    const submitAchieveForm = (e) => {
+        e.preventDefault();
+        let { matchType, gameName } = e.target;
+
+        /**
+         * TODO
+         * - Client-side validation
+         */
+
+        try {
+        } catch (e) {}
+    };
+
     return (
         <>
+            {/* Main buttons & Forms */}
             <div className="w-full h-auto flex flex-wrap items-center justify-center text-white">
                 <div className="mx-auto h-full min-h-24 flex flex-wrap justify-bewteen items-center">
                     <div className="w-40 h-full flex flex-wrap items-center justify-center text-center mx-10 relative">
@@ -35,12 +50,16 @@ export default function Match() {
                         </button>
 
                         {showAchieveForm ? (
-                            <form className="w-full h-auto absolute top-full left-0 p-2 mt-2 z-10 rounded-lg text-black bg-white border border-black">
+                            <form
+                                onSubmit={submitAchieveForm}
+                                className="w-full h-auto absolute top-full left-0 p-2 mt-2 z-10 rounded-lg text-black bg-white border border-black"
+                            >
                                 <div className="flex flex-col justify-center items-center text-center my-1">
                                     <label className="mb-4 font-semibold">
                                         Match Type:
                                         <input
                                             type="text"
+                                            name="matchType"
                                             placeholder="e.g. I achieved"
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
@@ -49,6 +68,7 @@ export default function Match() {
                                         Name of Game:
                                         <input
                                             type="text"
+                                            name="gameName"
                                             placeholder="e.g. Minecraft"
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
@@ -114,6 +134,8 @@ export default function Match() {
                 </div>
             </div>
 
+            {/* Matching results */}
+            {loading ? <div>Loading...</div> : <></>}
             <Profile />
         </>
     );
