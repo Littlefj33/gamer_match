@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "@/context/AuthContext";
+import { achievementMatch } from "./actions";
 import Profile from "./Profile";
 
 export default function Match() {
+    const { currentUser } = useContext(AuthContext);
+
     const [showAchieveForm, setShowAchForm] = useState(false);
     const [showHourForm, setShowHourForm] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const [matchedUsers, setMatchedUsers] = useState([]);
+    const [matchType, setMatchType] = useState("");
+
+    const [curPage, setCurPage] = useState(0);
 
     const handleShowForm = (type) => {
         switch (type) {
@@ -23,9 +32,11 @@ export default function Match() {
         }
     };
 
-    const submitAchieveForm = (e) => {
+    const submitAchieveForm = async (e) => {
         e.preventDefault();
         let { matchType, gameName } = e.target;
+        matchType = matchType.value;
+        gameName = gameName.value;
 
         /**
          * TODO
@@ -34,10 +45,25 @@ export default function Match() {
 
         try {
             setLoading(true);
+            const result = await achievementMatch({
+                userEmail: currentUser.email,
+                matchType,
+                gameName,
+            });
 
+            setMatchedUsers(result);
+            setMatchType("achievements");
             setLoading(false);
-        } catch (e) {}
+        } catch (e) {
+            console.log("ERROR", e);
+        }
     };
+
+    /**
+     * TODO:
+     * - matchType for Achievements: [iAchieved, theyAchieved, neitherAchieved]
+     * - Edit backend for achievements to only return matchType results in user objects
+     */
 
     return (
         <>
@@ -138,8 +164,21 @@ export default function Match() {
             </div>
 
             {/* Matching results */}
-            {loading ? <div>Loading...</div> : <></>}
-            <Profile />
+            {loading ? (
+                <div>Loading...</div>
+            ) : matchedUsers.length !== 0 ? (
+                <div>
+                    {matchedUsers
+                        .slice(curPage * 5, (curPage + 1) * 5)
+                        .map((user, i) => {
+                            <div key={i}>
+                                <Profile userInfo={user} type={matchType} />;
+                            </div>;
+                        })}
+                </div>
+            ) : (
+                <></>
+            )}
         </>
     );
 }
