@@ -2,7 +2,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
-import { doSignOut } from "@/utils/firebase/FirebaseFunctions.js";
 import { getUser } from "./actions";
 import Link from "next/link";
 
@@ -11,13 +10,25 @@ export default function Profile() {
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState({});
 
-    const handleSignOut = async () => {
-        try {
-            await doSignOut();
-        } catch (error) {
-            console.error(error);
-        }
-    };
+    const [friendListPage, setFriendListPage] = useState(1);
+    const friendsPerPage = 10;
+    const totalFriendPages = Math.ceil(userData.friendCount / friendsPerPage);
+    const startFriendPage = (friendListPage - 1) * friendsPerPage;
+
+    const [recentlyPlayedListPage, setRecentlyPlayedPage] = useState(1);
+    const recentlyPlayedPage = 10;
+    const totalRecentPlayedPages = Math.ceil(
+        userData.recentlyPlayedCount / recentlyPlayedPage
+    );
+    const startRecentPlayedPage =
+        (recentlyPlayedListPage - 1) * recentlyPlayedPage;
+
+    const [recentlyOwnedListPage, setOwnedListPage] = useState(1);
+    const recentlyOwnedPage = 10;
+    const totalOwnedPages = Math.ceil(
+        userData.gamesOwnedCount / recentlyOwnedPage
+    );
+    const startOwnedPage = (recentlyOwnedListPage - 1) * recentlyOwnedPage;
 
     useEffect(() => {
         async function fetchData() {
@@ -33,8 +44,45 @@ export default function Profile() {
         fetchData();
     }, []);
 
+    const nextFriendPage = () => {
+        if (friendListPage < totalFriendPages) {
+            setFriendListPage(friendListPage + 1);
+        }
+    };
+    const prevFriendPage = () => {
+        if (friendListPage > 1) {
+            setFriendListPage(friendListPage - 1);
+        }
+    };
+
+    const nextRecentlyPlayedPage = () => {
+        if (recentlyPlayedListPage < totalRecentPlayedPages) {
+            setRecentlyPlayedPage(recentlyPlayedListPage + 1);
+        }
+    };
+    const prevRecentlyPlayedPage = () => {
+        if (recentlyPlayedListPage > 1) {
+            setRecentlyPlayedPage(recentlyPlayedListPage - 1);
+        }
+    };
+
+    const nextOwnedPage = () => {
+        if (recentlyOwnedListPage < totalOwnedPages) {
+            setOwnedListPage(recentlyOwnedListPage + 1);
+        }
+    };
+    const prevOwnedPage = () => {
+        if (recentlyOwnedListPage > 1) {
+            setOwnedListPage(recentlyOwnedListPage - 1);
+        }
+    };
+
     if (!currentUser) {
         redirect("/auth/login");
+    }
+
+    if (currentUser) {
+        redirect("/profile");
     }
 
     if (loading) {
@@ -143,8 +191,13 @@ export default function Profile() {
                                             Recently Played
                                         </h3>
                                         <ul>
-                                            {userData.recentlyPlayed.map(
-                                                (recentGame, i) => {
+                                            {userData.recentlyPlayed
+                                                .slice(
+                                                    startRecentPlayedPage,
+                                                    startRecentPlayedPage +
+                                                        recentlyPlayedPage
+                                                )
+                                                .map((recentGame, i) => {
                                                     return (
                                                         <li key={i}>
                                                             <p>
@@ -155,9 +208,27 @@ export default function Profile() {
                                                             </p>
                                                         </li>
                                                     );
-                                                }
-                                            )}
+                                                })}
                                         </ul>
+                                        <div>
+                                            <button
+                                                onClick={prevRecentlyPlayedPage}
+                                                disabled={
+                                                    recentlyPlayedListPage < 1
+                                                }
+                                            >
+                                                Previous
+                                            </button>
+                                            <button
+                                                onClick={nextRecentlyPlayedPage}
+                                                disabled={
+                                                    recentlyPlayedListPage >=
+                                                    totalRecentPlayedPages
+                                                }
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div>
@@ -180,8 +251,13 @@ export default function Profile() {
                                             Owned Games
                                         </h3>
                                         <ul>
-                                            {userData.gamesOwned.map(
-                                                (ownedGame, i) => {
+                                            {userData.gamesOwned
+                                                .slice(
+                                                    startOwnedPage,
+                                                    startOwnedPage +
+                                                        recentlyOwnedPage
+                                                )
+                                                .map((ownedGame, i) => {
                                                     return (
                                                         <li key={i}>
                                                             <p>
@@ -192,9 +268,27 @@ export default function Profile() {
                                                             </p>
                                                         </li>
                                                     );
-                                                }
-                                            )}
+                                                })}
                                         </ul>
+                                        <div>
+                                            <button
+                                                onClick={prevOwnedPage}
+                                                disabled={
+                                                    recentlyOwnedListPage < 1
+                                                }
+                                            >
+                                                Previous
+                                            </button>
+                                            <button
+                                                onClick={nextOwnedPage}
+                                                disabled={
+                                                    recentlyOwnedListPage >=
+                                                    totalOwnedPages
+                                                }
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div>
@@ -217,14 +311,17 @@ export default function Profile() {
                                             Friends List: {userData.friendCount}
                                         </h3>
                                         <ul>
-                                            {userData.friendList.map(
-                                                (friend, i) => {
+                                            {userData.friendList
+                                                .slice(
+                                                    startFriendPage,
+                                                    startFriendPage +
+                                                        friendsPerPage
+                                                )
+                                                .map((friend, i) => {
                                                     return (
                                                         <li key={i}>
                                                             <Link
-                                                                href={
-                                                                    friend.username
-                                                                }
+                                                                href={`/profile/${friend.username}`}
                                                             >
                                                                 {
                                                                     friend.username
@@ -232,9 +329,25 @@ export default function Profile() {
                                                             </Link>
                                                         </li>
                                                     );
-                                                }
-                                            )}
+                                                })}
                                         </ul>
+                                        <div>
+                                            <button
+                                                onClick={prevFriendPage}
+                                                disabled={friendListPage < 1}
+                                            >
+                                                Previous
+                                            </button>
+                                            <button
+                                                onClick={nextFriendPage}
+                                                disabled={
+                                                    friendListPage >=
+                                                    totalFriendPages
+                                                }
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div>
@@ -254,15 +367,6 @@ export default function Profile() {
                 ) : (
                     <h1>Not signed in</h1>
                 )}
-
-                <div className="text-center">
-                    <button
-                        className="mt-4 bg-persian-blue text-white font-bold py-1 px-3 rounded"
-                        onClick={handleSignOut}
-                    >
-                        Sign Out
-                    </button>
-                </div>
             </div>
         );
     }
