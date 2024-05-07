@@ -9,7 +9,7 @@ import {
 import { createClient } from "redis";
 import { users } from "../config/mongoCollections.js";
 import validation from "../helpers.js";
-const API_KEY = "C0FE0FB620850FD036A71B7373F47917";
+const API_KEY = process.env.STEAM_API_KEY;
 
 export const updateUserSteamInfo = async (emailAddress) => {
     emailAddress = validation.emailValidation(emailAddress);
@@ -86,6 +86,8 @@ export const getSteamUsersGames = async (emailAddress) => {
         const cacheExists = await client.exists("Games Owned: " + steamId);
         if (cacheExists) {
             const userGameData = await client.get("Games Owned: " + steamId);
+            user.gamesOwned = JSON.parse(userGameData);
+            await setDbInfo(emailAddress, user);
             return JSON.parse(userGameData);
         }
         const response = await axios.get(
@@ -112,6 +114,7 @@ export const getSteamUsersGames = async (emailAddress) => {
                     return user.gamesOwned;
                 } else {
                     user.gamesOwned = userGameData;
+                    user.gamesOwnedCount = userGameData.length;
                     await setDbInfo(emailAddress, user);
                     await client.set(
                         "Games Owned: " + steamId,
@@ -123,6 +126,7 @@ export const getSteamUsersGames = async (emailAddress) => {
             }
         }
     } catch (e) {
+        console.log(e);
         throw new ResourcesError("Error fetching steam account games");
     }
 };
@@ -168,6 +172,8 @@ export const getRecentlyPlayed = async (emailAddress) => {
                     return user.recentlyPlayed;
                 } else {
                     user.recentlyPlayed = userRecentlyPlayedGameData;
+                    user.recentlyPlayedCount =
+                        userRecentlyPlayedGameData.length;
                     await setDbInfo(emailAddress, user);
                     await client.set(
                         "Recently Played: " + steamId,
@@ -538,7 +544,7 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
                 if (hourComparison < 25) {
                     matchedUsers.push({
                         username: otherUser.username,
-                        playtime: Math.floor(
+                        playetime: Math.floor(
                             otherUserGameStats.playtime_forever / 60
                         ),
                     });

@@ -11,6 +11,26 @@ export default function Profile() {
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState({});
 
+    const [friendListPage, setFriendListPage] = useState(1);
+    const friendsPerPage = 10;
+    const totalFriendPages = Math.ceil(userData.friendCount / friendsPerPage);
+    const startFriendPage = (friendListPage - 1) * friendsPerPage;
+
+    const [recentlyPlayedListPage, setRecentlyPlayedPage] = useState(1);
+    const recentlyPlayedPage = 10;
+    const totalRecentPlayedPages = Math.ceil(
+        userData.recentlyPlayedCount / recentlyPlayedPage
+    );
+    const startRecentPlayedPage =
+        (recentlyPlayedListPage - 1) * recentlyPlayedPage;
+
+    const [recentlyOwnedListPage, setOwnedListPage] = useState(1);
+    const recentlyOwnedPage = 10;
+    const totalOwnedPages = Math.ceil(
+        userData.gamesOwnedCount / recentlyOwnedPage
+    );
+    const startOwnedPage = (recentlyOwnedListPage - 1) * recentlyOwnedPage;
+
     const handleSignOut = async () => {
         try {
             await doSignOut();
@@ -32,6 +52,39 @@ export default function Profile() {
         }
         fetchData();
     }, []);
+
+    const nextFriendPage = () => {
+        if (friendListPage < totalFriendPages) {
+            setFriendListPage(friendListPage + 1);
+        }
+    };
+    const prevFriendPage = () => {
+        if (friendListPage > 1) {
+            setFriendListPage(friendListPage - 1);
+        }
+    };
+
+    const nextRecentlyPlayedPage = () => {
+        if (recentlyPlayedListPage < totalRecentPlayedPages) {
+            setRecentlyPlayedPage(recentlyPlayedListPage + 1);
+        }
+    };
+    const prevRecentlyPlayedPage = () => {
+        if (recentlyPlayedListPage > 1) {
+            setRecentlyPlayedPage(recentlyPlayedListPage - 1);
+        }
+    };
+
+    const nextOwnedPage = () => {
+        if (recentlyOwnedListPage < totalOwnedPages) {
+            setOwnedListPage(recentlyOwnedListPage + 1);
+        }
+    };
+    const prevOwnedPage = () => {
+        if (recentlyOwnedListPage > 1) {
+            setOwnedListPage(recentlyOwnedListPage - 1);
+        }
+    };
 
     if (!currentUser) {
         redirect("/auth/login");
@@ -140,11 +193,19 @@ export default function Profile() {
                                 {userData.recentlyPlayed.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Recently Played
+                                            Recently Played:{" "}
+                                            {userData.recentlyPlayedCount
+                                                ? `*${userData.recentlyPlayedCount}`
+                                                : "0"}
                                         </h3>
                                         <ul>
-                                            {userData.recentlyPlayed.map(
-                                                (recentGame, i) => {
+                                            {userData.recentlyPlayed
+                                                .slice(
+                                                    startRecentPlayedPage,
+                                                    startRecentPlayedPage +
+                                                        recentlyPlayedPage
+                                                )
+                                                .map((recentGame, i) => {
                                                     return (
                                                         <li key={i}>
                                                             <p>
@@ -155,14 +216,35 @@ export default function Profile() {
                                                             </p>
                                                         </li>
                                                     );
-                                                }
-                                            )}
+                                                })}
                                         </ul>
+                                        <div>
+                                            <button
+                                                onClick={prevRecentlyPlayedPage}
+                                                disabled={
+                                                    recentlyPlayedListPage < 1
+                                                }
+                                            >
+                                                Previous
+                                            </button>
+                                            <button
+                                                onClick={nextRecentlyPlayedPage}
+                                                disabled={
+                                                    recentlyPlayedListPage >=
+                                                    totalRecentPlayedPages
+                                                }
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Recently Played Games
+                                            Recently Played Games:{" "}
+                                            {userData.recentlyPlayedCount
+                                                ? `*${userData.recentlyPlayedCount}`
+                                                : "0"}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
@@ -177,11 +259,19 @@ export default function Profile() {
                                 {userData.gamesOwned.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Owned Games
+                                            Owned Games:{" "}
+                                            {userData.gamesOwnedCount
+                                                ? `*${userData.gamesOwnedCount}`
+                                                : "0"}
                                         </h3>
                                         <ul>
-                                            {userData.gamesOwned.map(
-                                                (ownedGame, i) => {
+                                            {userData.gamesOwned
+                                                .slice(
+                                                    startOwnedPage,
+                                                    startOwnedPage +
+                                                        recentlyOwnedPage
+                                                )
+                                                .map((ownedGame, i) => {
                                                     return (
                                                         <li key={i}>
                                                             <p>
@@ -192,14 +282,35 @@ export default function Profile() {
                                                             </p>
                                                         </li>
                                                     );
-                                                }
-                                            )}
+                                                })}
                                         </ul>
+                                        <div>
+                                            <button
+                                                onClick={prevOwnedPage}
+                                                disabled={
+                                                    recentlyOwnedListPage < 1
+                                                }
+                                            >
+                                                Previous
+                                            </button>
+                                            <button
+                                                onClick={nextOwnedPage}
+                                                disabled={
+                                                    recentlyOwnedListPage >=
+                                                    totalOwnedPages
+                                                }
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Owned Games
+                                            Owned Games:{" "}
+                                            {userData.gamesOwnedCount
+                                                ? `*${userData.gamesOwnedCount}`
+                                                : "0"}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
@@ -217,8 +328,13 @@ export default function Profile() {
                                             Friends List: {userData.friendCount}
                                         </h3>
                                         <ul>
-                                            {userData.friendList.map(
-                                                (friend, i) => {
+                                            {userData.friendList
+                                                .slice(
+                                                    startFriendPage,
+                                                    startFriendPage +
+                                                        friendsPerPage
+                                                )
+                                                .map((friend, i) => {
                                                     return (
                                                         <li key={i}>
                                                             <Link
@@ -230,9 +346,25 @@ export default function Profile() {
                                                             </Link>
                                                         </li>
                                                     );
-                                                }
-                                            )}
+                                                })}
                                         </ul>
+                                        <div>
+                                            <button
+                                                onClick={prevFriendPage}
+                                                disabled={friendListPage < 1}
+                                            >
+                                                Previous
+                                            </button>
+                                            <button
+                                                onClick={nextFriendPage}
+                                                disabled={
+                                                    friendListPage >=
+                                                    totalFriendPages
+                                                }
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div>
