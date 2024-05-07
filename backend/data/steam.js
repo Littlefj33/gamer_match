@@ -351,7 +351,7 @@ export const matchTwoUsersOnLibrary = async (user1emailAddress, user2emailAddres
     for(const game of user1OwnedGames){
         let matchingGame = user2OwnedGames.find(findGame => findGame.name === game.name)
         if(matchingGame){
-            matchingGames.push(matchingGame)
+            matchingGames.push(matchingGame.name)
         }
     }
 
@@ -388,24 +388,25 @@ export const findTopMatchesOnLibrary = async (emailAddress)=>{
     const usersCollection = dbInfo.usersCollection
     const allUsers = await usersCollection.find({}).toArray()
     const userFriends = user.friendList;
-    let commonLibraries = []
+    let matchedUsers = []
     for(const otherUser of allUsers){
         if(user.emailAddress !== otherUser.emailAddress){
             const result = userFriends.find(item => item.username === otherUser.username)
             if(!result){
             const matchingGames = await matchTwoUsersOnLibrary(user.emailAddress, otherUser.emailAddress)
-            commonLibraries.push({
-                username: user.username, 
-                userMatched: otherUser.username,
-                userMatchedProfile: otherUser.steamProfileLink,
+            matchedUsers.push({
+                username: otherUser.username,
                 gamesShared: matchingGames,
-                numGamesShared: matchingGames.length })
+                })
             }
+            
         }   
     }
 
-    return commonLibraries.sort((a, b) => b.numGamesShared - a.numGamesShared)
+    return matchedUsers.sort((a, b) => b.gamesShared.length - a.gamesShared.length)
 }
+    
+
 
 //Matches users based on achievements, this one is really messy and comments explain how it works, but this can use some cleanup
 export const matchOnAchievements = async (emailAddress, game, matchType) =>{
@@ -430,43 +431,52 @@ export const matchOnAchievements = async (emailAddress, game, matchType) =>{
 
                 //Find all achievements neither user has, and achievements that one user has and the other doesnt
                 const achievementData = await mapAchievementStates(userAchievementStates, otherUserAchievementStates)
-                matchedUsers.push({
-                    username: user.username,
-                    matchedUser: otherUser.username,
-                    matchedUserSteamProfile: otherUser.steamProfileLink,
-                    achievementsNeitherHas: achievementData.neitherUserAchieved,
-                    achievementsUserHasOtherDoesnt: achievementData.userAchieved,
-                    achievementsOtherHasUserDoesnt: achievementData.otherUserAchieved
-                })
+    
+                //On frontend we will have a 3 ways to sort
+
+                //Say I want to grind achievements with another person
+                //sorts matched users based on highest count that neither player achieved
+                if(matchType === 'neitherAchieved'){
+                    matchedUsers.push({
+                        username: otherUser.username,
+                        achievements: achievementData.neitherUserAchieved
+                    })
+                    matchedUsers.sort((userA, userB) =>{
+                        userB.achievements.length - userA.achievements.length
+                    })
+                    return matchedUsers
+                }
+
+                //Say I want to help someone else get achievements I already have and know how to get
+                //Sorts matched users based on highest count of achievements I have, but the other user doesnt
+                else if(matchType === 'iAchieved'){
+                    matchedUsers.push({
+                        username: otherUser.username,
+                        achievements: achievementData.userAchieved
+                    })
+                    matchedUsers.sort((userA, userB) =>{
+                        userB.achievements.length - userA.achievements.length
+                    })
+                    return matchedUsers
+                }
+
+                //Say I need help to get achievements i do not have
+                //Sorts matched users based on highest count of achievements the other user has, but I dont
+                if(matchType === 'theyAchieved'){
+                    matchedUsers.push({
+                        username: otherUser.username,
+                        achievements: achievementData.otherUserAchieved
+                    })
+                    matchedUsers.sort((userA, userB) =>{
+                        userB.achievements.length - userA.achievements.length
+                    })
+                    return matchedUsers
+                }
             }
         }
     }
 
-    //On frontend we will have a 3 ways to sort
-
-    //Say I want to grind achievements with another person
-    //sorts matched users based on highest count that neither player achieved
-    if(matchType === 'neitherAchieved'){
-        return matchedUsers.sort((userA, userB) =>{
-            userB.achievementsNeitherHas.length - userA.achievementsNeitherHas.length
-        })
-    }
-
-    //Say I want to help someone else get achievements I already have and know how to get
-    //Sorts matched users based on highest count of achievements I have, but the other user doesnt
-    else if(matchType === 'iAchieved'){
-        return matchedUsers.sort((userA, userB) =>{
-            userB.achievementsUserHasOtherDoesnt.length - userA.achievementsUserHasOtherDoesnt.length
-        })
-    }
-
-    //Say I need help to get achievements i do not have
-    //Sorts matched users based on highest count of achievements the other user has, but I dont
-    if(matchType === 'theyAchieved'){
-        return matchedUsers.sort((userA, userB) =>{
-            userB.achievementsOtherHasUserDoesnt.length - userA.achievementsOtherHasUserDoesnt.length
-        })
-    }
+    
 }
 
 export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
@@ -485,11 +495,8 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
                 const hourComparison = Math.abs(userGameStats.playtime_forever - otherUserGameStats.playtime_forever) / 60
                 if(hourComparison < 25){
                     matchedUsers.push({
-                        username: user.username,
-                        matchedUser: otherUser.username,
-                        matchedUserSteamProfile: otherUser.steamProfileLink,
-                        matchUserPlaytime: parseInt(otherUserGameStats.playtime_forever/60) + " hours " + parseInt(otherUserGameStats.playtime_forever%60) + " minutes",
-                        playtime_forever: otherUserGameStats.playtime_forever
+                        username: otherUser.username,
+                        playetime: Math.floor(otherUserGameStats.playtime_forever/60)
                     })
                 }
             }
