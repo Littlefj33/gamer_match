@@ -2,7 +2,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
-import { doSignOut } from "@/utils/firebase/FirebaseFunctions.js";
 import { getUser } from "./actions";
 import Link from "next/link";
 
@@ -30,14 +29,6 @@ export default function Profile() {
         userData.gamesOwnedCount / recentlyOwnedPage
     );
     const startOwnedPage = (recentlyOwnedListPage - 1) * recentlyOwnedPage;
-
-    const handleSignOut = async () => {
-        try {
-            await doSignOut();
-        } catch (error) {
-            console.error(error);
-        }
-    };
 
     useEffect(() => {
         async function fetchData() {
@@ -88,6 +79,10 @@ export default function Profile() {
 
     if (!currentUser) {
         redirect("/auth/login");
+    }
+
+    if (currentUser) {
+        redirect("/profile");
     }
 
     if (loading) {
@@ -372,15 +367,6 @@ export default function Profile() {
                 ) : (
                     <h1>Not signed in</h1>
                 )}
-
-                <div className="text-center">
-                    <button
-                        className="mt-4 bg-persian-blue text-white font-bold py-1 px-3 rounded"
-                        onClick={handleSignOut}
-                    >
-                        Sign Out
-                    </button>
-                </div>
             </div>
         );
     }
