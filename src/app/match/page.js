@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { achievementMatch } from "./actions";
 import Profile from "./Profile";
@@ -13,7 +13,7 @@ export default function Match() {
     const [showAchieveForm, setShowAchForm] = useState(false);
     const [showHourForm, setShowHourForm] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [matchInfo, setMatchInfo] = useState({});
+    const [matchResults, setMatchResults] = useState([]);
 
     const handleShowForm = (type) => {
         switch (type) {
@@ -51,12 +51,16 @@ export default function Match() {
             });
 
             result = JSON.parse(result);
-            setMatchInfo(result);
+            setMatchResults([result, ...matchResults]);
             setLoading(false);
         } catch (e) {
             console.log("ERROR", e);
         }
     };
+
+    useEffect(() => {
+        console.log(matchResults);
+    }, [matchResults]);
 
     /* TODO:
         - matchType for Achievements: [iAchieved, theyAchieved, neitherAchieved]
@@ -132,6 +136,7 @@ export default function Match() {
                                         Number of Hours:
                                         <input
                                             type="text"
+                                            name="playtime"
                                             placeholder="e.g. 230"
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
@@ -140,6 +145,7 @@ export default function Match() {
                                         Name of Game:
                                         <input
                                             type="text"
+                                            name="gameName"
                                             placeholder="e.g. Minecraft"
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
@@ -172,13 +178,47 @@ export default function Match() {
                         Loading...
                     </div>
                 </div>
-            ) : Object.keys(matchInfo).length !== 0 ? (
-                <div>
-                    <div className="flex justify-start mx-10 overflow-x-scroll scrollbar">
-                        {matchInfo.matchedUsers.map((user, i) => {
+            ) : (
+                <></>
+            )}
+
+            {matchResults.length > 0 ? (
+                <div className="flex justify-center items-center">
+                    <div className="w-5/6">
+                        {matchResults.map((result, i) => {
                             return (
-                                <div key={i} className="mx-5 my-5">
-                                    <Profile userData={user} />
+                                <div key={i}>
+                                    <div className="flex justify-start items-center text-center mx-10">
+                                        <div className="p-2 border-white bg-white rounded-full">
+                                            results for: {result.gameName}
+                                        </div>
+                                    </div>
+                                    {result.matchedUsers.length > 0 ? (
+                                        <div>
+                                            <div className="snap-x flex justify-start mx-10 overflow-x-scroll scrollbar">
+                                                {result.matchedUsers.map(
+                                                    (user, i) => {
+                                                        return (
+                                                            <div
+                                                                key={i}
+                                                                className="snap-start mx-5 my-5"
+                                                            >
+                                                                <Profile
+                                                                    userData={
+                                                                        user
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        );
+                                                    }
+                                                )}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex justify-center items-center text-center">
+                                            No results found
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}

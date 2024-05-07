@@ -6,10 +6,10 @@ import { addFriend } from "./actions";
 
 export default function Profile({ userData }) {
     const { currentUser } = useContext(AuthContext);
-    const [friendStatus, setFriendStatus] = useState(""); // "friend", "pending", "notFriend"
+    const [friendStatus, setFriendStatus] = useState("");
 
     const handleAddFriend = async () => {
-        setFriendStatus("pending");
+        setFriendStatus("requestSent");
         await addFriend(currentUser.email, userData.username);
         let success;
         if (success) {
@@ -21,12 +21,11 @@ export default function Profile({ userData }) {
 
     /* TODO
         - Actual backend call to get friend status (remove hardcoded values)
-        - Alter content of profile object based match type and its result
     */
 
     useEffect(() => {
         /* Hardcoded value */
-        setFriendStatus("friend");
+        setFriendStatus("friend"); // Object {isFriend: boolean, requestSent: boolean}
     }, []);
 
     return (
@@ -52,17 +51,44 @@ export default function Profile({ userData }) {
                 </Link>
             </div>
 
-            <div className="mt-3 overflow-y-scroll scrollbar">
-                <ul className="list-disc list-inside break-all mr-3">
-                    <li className="text-xs">Name of Achievement...</li>
-                    <li className="text-xs">Name of Achievement...</li>
-                    <li className="text-xs">Name of Achievement...</li>
-                    <li className="text-xs">Name of Achievement...</li>
-                    <li className="text-xs">Name of Achievement...</li>
-                    <li className="text-xs">Name of Achievement...</li>
-                    <li className="text-xs">Name of Achievement...</li>
-                </ul>
-            </div>
+            {userData.achievements !== undefined ? (
+                userData.achievements.length > 0 ? (
+                    <div className="mt-3 overflow-y-scroll scrollbar">
+                        <ul className="list-disc list-inside mr-3 break-all text-sm">
+                            {userData.achievements.map((achievement, i) => {
+                                return <li key={i}>{achievement}</li>;
+                            })}
+                        </ul>
+                    </div>
+                ) : (
+                    <div>No Achievements Found</div>
+                )
+            ) : userData.playtime !== undefined ? (
+                <div className="flex flex-col mt-3 items-center text-center">
+                    <div className="justify-center items-center text-center text-lg font-semibold">
+                        {userData.playtime > 99999999
+                            ? ">99999999"
+                            : userData.playtime}
+                    </div>
+                    <div className="justify-center items-center text-center text-sm">
+                        Hours Played
+                    </div>
+                </div>
+            ) : userData.gamesShared !== undefined ? (
+                userData.gamesShared.length > 0 ? (
+                    <div className="mt-3 overflow-y-scroll scrollbar">
+                        <ul className="list-disc list-inside mr-3 break-all text-sm">
+                            {userData.gamesShared.map((game, i) => {
+                                return <li key={i}>{game}</li>;
+                            })}
+                        </ul>
+                    </div>
+                ) : (
+                    <div>No Shared Games Found</div>
+                )
+            ) : (
+                <div>ERROR: Could not get data</div>
+            )}
 
             <div className="flex justify-end mt-2">
                 {friendStatus === "notFriend" ? (

@@ -29,12 +29,16 @@ body {
 @layer utilities {
     .scrollbar::-webkit-scrollbar {
         width: 5px;
+        height: 12px;
     }
 
     .scrollbar::-webkit-scrollbar-track {
         border-radius: 100vh;
         background: white;
-        border: 3px solid transparent;
+    }
+
+    .scrollbar::-webkit-scrollbar-track-piece {
+        margin-left: -0.6vw;
     }
 
     .scrollbar::-webkit-scrollbar-thumb {
