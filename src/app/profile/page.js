@@ -193,7 +193,10 @@ export default function Profile() {
                                 {userData.recentlyPlayed.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Recently Played
+                                            Recently Played:{" "}
+                                            {userData.recentlyPlayedCount
+                                                ? `*${userData.recentlyPlayedCount}`
+                                                : "0"}
                                         </h3>
                                         <ul>
                                             {userData.recentlyPlayed
@@ -238,7 +241,10 @@ export default function Profile() {
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Recently Played Games
+                                            Recently Played Games:{" "}
+                                            {userData.recentlyPlayedCount
+                                                ? `*${userData.recentlyPlayedCount}`
+                                                : "0"}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
@@ -253,7 +259,10 @@ export default function Profile() {
                                 {userData.gamesOwned.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Owned Games
+                                            Owned Games:{" "}
+                                            {userData.gamesOwnedCount
+                                                ? `*${userData.gamesOwnedCount}`
+                                                : "0"}
                                         </h3>
                                         <ul>
                                             {userData.gamesOwned
@@ -298,7 +307,10 @@ export default function Profile() {
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Owned Games
+                                            Owned Games:{" "}
+                                            {userData.gamesOwnedCount
+                                                ? `*${userData.gamesOwnedCount}`
+                                                : "0"}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
