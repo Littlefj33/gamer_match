@@ -5,10 +5,6 @@ import { users } from '../config/mongoCollections.js';
 import validation from '../helpers.js';
 const API_KEY = "C0FE0FB620850FD036A71B7373F47917"
 
-
-
-const client = createClient()
-
 export const updateUserSteamInfo = async(emailAddress) => {
     emailAddress = validation.emailValidation(emailAddress)
     await getSteamUsersGames(emailAddress)
@@ -33,12 +29,14 @@ export const convertVanityUrl = async (customId) => {
     return
 }
 export const getSteamUser = async (steamId) => {
-    steamId = validation.stringCheck(steamId);
-    const checkId = parseInt(steamId)
+    steamId = validation.stringCheck(steamId); 
+    const checkId = parseInt(steamId);
     if(isNaN(checkId)){
-        steamId = await convertVanityUrl(steamId)
+        steamId = await convertVanityUrl(steamId);
     }
     try {
+        const client = createClient();
+        await client.connect();
         const cacheExists = await client.exists("User Data: " + steamId);
         if (cacheExists) {
             const userGameData = await client.get("User Data: " + steamId);
@@ -75,6 +73,8 @@ export const getSteamUsersGames = async (emailAddress) => {
     const user = dbInfo.user;
     const steamId = user.steamId;
     try {
+        const client = createClient();
+        await client.connect();
         const cacheExists = await client.exists("Games Owned: " + steamId);
         if (cacheExists) {
             const userGameData = await client.get("Games Owned: " + steamId);
@@ -123,6 +123,8 @@ export const getRecentlyPlayed = async (emailAddress) =>{
     const user = dbInfo.user
     const steamId = user.steamId;
     try {
+        const client = createClient();
+        await client.connect();
         const cacheExists = await client.exists("Recently Played: " + steamId);
         if (cacheExists) {
             const userGameData = await client.get("Recently Played: " + steamId);
@@ -172,6 +174,8 @@ export const getTopFiveGames = async (emailAddress) =>{
     const dbInfo = await handleErrorChecking(emailAddress)
     const user = dbInfo.user
     const steamId = user.steamId;
+    const client = createClient();
+    await client.connect();
     const cacheExists = await client.exists("Most played: " + steamId)
         if(cacheExists){
             const userGameData = await client.get("Most played: " + steamId);
@@ -229,6 +233,8 @@ export const getTopFiveGames = async (emailAddress) =>{
 //Function that gets a game from a users library
 export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     emailAddress = validation.emailValidation(emailAddress)
+    const client = createClient();
+    await client.connect();
     const cacheExists = await client.exists(gameToFind);
     if (cacheExists) {
         const gameFound = await client.get(gameToFind);
@@ -266,6 +272,8 @@ export const getPlayerAchievmentsForGame = async (emailAddress, gameToFind) => {
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
     const game = await getUserOwnedGame(emailAddress, gameToFind);
+    const client = createClient();
+    await client.connect();
     const cacheExists = await client.exists(
         "Player Achievement Data: " + emailAddress + " " + game.name
     );
@@ -554,6 +562,8 @@ export const getAllUsersWhoOwnGame = async (gameName) =>{
 
 //Helper function to get achievement display names
 export const getGameShema = async (gameId) => {
+    const client = createClient();
+    await client.connect();
     const cacheExists = await client.exists(gameId.toString());
     if (cacheExists) {
         const gameSchema = await client.get(gameId.toString());
