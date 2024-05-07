@@ -7,6 +7,9 @@ import {
     linkSteamAccount,
     unlinkSteamAccount,
     isAccountLinked,
+    getSteamUsersGames,
+    getRecentlyPlayed,
+    getTopFiveGames
 } from "../actions";
 
 export default function Register() {
@@ -21,7 +24,7 @@ export default function Register() {
             setLoading(true);
             let emailAddress = currentUser.email;
             let mongoResponse = await isAccountLinked({ emailAddress });
-            setIsLinked(mongoResponse);
+            await setIsLinked(mongoResponse);
             setLoading(false);
         } catch (error) {
             setLoading(false);
@@ -57,6 +60,9 @@ export default function Register() {
                 setLoading(false);
                 return;
             }
+            await getSteamUsersGames({ emailAddress });
+            await getRecentlyPlayed({ emailAddress });
+            await getTopFiveGames({ emailAddress });
             setLoading(false);
             window.location.reload();
         } catch (error) {
