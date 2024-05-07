@@ -1,44 +1,52 @@
 "use client";
-
 import Link from "next/link";
+import { emailValidation, passwordValidation } from "@/utils/helpers";
 import { redirect } from "next/navigation";
 import { useState, useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { loginUser } from "../actions.js";
-import SocialSignIn from "./SocialSignIn.jsx";
 import { doSignInWithEmailAndPassword } from "@/utils/firebase/FirebaseFunctions.js";
 
 export default function Login() {
     const { currentUser } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
-    const [errorObj, setErrorObj] = useState({});
+    const [emailError, setEmailError] = useState({});
+    const [passwordError, setPasswordError] = useState({});
+    const [serverError, setServerError] = useState({});
 
-    const handleLogin = async (event) => {
-        event.preventDefault();
-        let { email, password } = event.target;
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        let { email, password } = e.target;
 
         email = email.value;
         password = password.value;
 
-        /**
-         * TODO:
-         * - Client-side validation
-         */
+        let emailStatus = emailValidation(email);
+        if (emailStatus.isValid == false) {
+            setEmailError({ email: emailStatus.errors.message });
+        }
+        let passwordStatus = passwordValidation(password);
+        if (passwordStatus.isValid == false) {
+            setPasswordError({ password: passwordStatus.errors.message });
+        }
+        if (emailStatus.isValid == false || passwordStatus.isValid == false) {
+            return;
+        }
 
         try {
             setLoading(true);
-
-            let response = await loginUser({ email, password });
+            let mongoResponse = await loginUser({ email, password });
+            if (mongoResponse.success == false) {
+                setServerError({ 0: mongoResponse.error });
+                setLoading(false);
+                return;
+            }
             await doSignInWithEmailAndPassword(email, password);
-
             setLoading(false);
         } catch (error) {
             setLoading(false);
             alert(error);
         }
-        // if(currentUser){
-        //     redirect("/");
-        // }
     };
 
     if (currentUser) {
@@ -56,19 +64,34 @@ export default function Login() {
                     <label>
                         Email Address:
                         <input
+                            required
                             name="email"
-                            id="email"
                             type="email"
                             placeholder="Email"
-                            required
-                            autoFocus={true}
                         />
                     </label>
+                    {Object.keys(emailError).length !== 0 ? (
+                        <div className="text-red-500">
+                            <h2>ERROR:</h2>
+                            <ul>
+                                {Object.keys(emailError).map((key, i) => {
+                                    return (
+                                        <li key={i}>
+                                            {key}: {emailError[key]}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
                 </div>
                 <div>
                     <label>
                         Password:
                         <input
+                            id="password"
                             name="password"
                             type="password"
                             placeholder="Password"
@@ -76,21 +99,36 @@ export default function Login() {
                             required
                         />
                     </label>
+                    {Object.keys(passwordError).length !== 0 ? (
+                        <div className="text-red-500">
+                            <h2>ERROR:</h2>
+                            <ul>
+                                {Object.keys(passwordError).map((key, i) => {
+                                    return (
+                                        <li key={i}>
+                                            {key}: {passwordError[key]}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
                 </div>
-
                 <button className="button" type="submit">
                     Log in
                 </button>
             </form>
 
-            {Object.keys(errorObj).length !== 0 ? (
+            {Object.keys(serverError).length !== 0 ? (
                 <div className="text-red-500">
                     <h2>ERROR:</h2>
                     <ul>
-                        {Object.keys(errorObj).map((key, i) => {
+                        {Object.keys(serverError).map((key, i) => {
                             return (
                                 <li key={i}>
-                                    {key}: {errorObj[key]}
+                                    {key}: {serverError[key]}
                                 </li>
                             );
                         })}
@@ -99,8 +137,6 @@ export default function Login() {
             ) : (
                 <></>
             )}
-
-            <SocialSignIn />
 
             <Link href="/auth/register">
                 No account? Click here to Register!

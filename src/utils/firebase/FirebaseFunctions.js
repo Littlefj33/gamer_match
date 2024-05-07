@@ -28,9 +28,8 @@ async function doChangePassword(email, oldPassword, newPassword) {
 }
 
 async function doSignInWithEmailAndPassword(email, password) {
-    console.log(email, password);
     let auth = getAuth();
-    let temp = await signInWithEmailAndPassword(auth, email, password);
+    await signInWithEmailAndPassword(auth, email, password);
 }
 
 async function doSocialSignIn() {
