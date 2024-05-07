@@ -2,7 +2,7 @@
 
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { achievementMatch } from "./actions";
+import { achievementMatch, generateAutoMatches } from "./actions";
 import Profile from "./Profile";
 import { redirect } from "next/navigation";
 import Image from "next/image";
@@ -61,6 +61,17 @@ export default function Match() {
     useEffect(() => {
         console.log(matchResults);
     }, [matchResults]);
+
+    useEffect(() => {
+        async function autoGenerate() {
+            let autoResults = await generateAutoMatches({
+                userEmail: currentUser.email,
+            });
+            autoResults = JSON.parse(autoResults);
+            setMatchResults(autoResults);
+        }
+        autoGenerate();
+    }, []);
 
     /* TODO:
         - matchType for Achievements: [iAchieved, theyAchieved, neitherAchieved]
@@ -189,8 +200,18 @@ export default function Match() {
                             return (
                                 <div key={i}>
                                     <div className="flex justify-start items-center text-center mx-10">
-                                        <div className="p-2 border-white bg-white rounded-full">
-                                            results for: {result.gameName}
+                                        <div className="text-black font-bold text-lg">
+                                            {result.type === "achievements"
+                                                ? result.matchType ===
+                                                  "iAchieved"
+                                                    ? `I earned achievements users did not for: ${result.gameName}`
+                                                    : result.matchType ===
+                                                      "theyAchieved"
+                                                    ? `User earned achievements I did not for: ${result.gameName}`
+                                                    : `Neither earned achievements for: ${result.gameName}`
+                                                : result.type === "playtime"
+                                                ? `Similar Hours Played on: ${result.gameName}`
+                                                : "Shared Library of Games"}
                                         </div>
                                     </div>
                                     {result.matchedUsers.length > 0 ? (

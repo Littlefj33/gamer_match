@@ -1,20 +1,20 @@
 "use server";
 
 import { sendFriendRequest } from "../../../backend/data/friends";
-import { matchOnAchievements } from "../../../backend/data/steam";
+import {
+    findTopMatchesOnLibrary,
+    getTopFiveGames,
+    matchOnAchievements,
+    matchUsersOnPlaytimeByGame,
+} from "../../../backend/data/steam";
 
 /* TODO
-    - Add functionality for matching user using playtime & shared library
+    - Client-side validation
     - Test everything using non-hardcoded data
+    - Fix error functionality
 */
 
 export async function achievementMatch({ userEmail, matchType, gameName }) {
-    /* TODO
-        - Client-side validation
-        - Actual backend calls (remove hardcoded results)
-        - Fix error functionality
-    */
-
     try {
         const matchedUsers = await matchOnAchievements(
             userEmail,
@@ -319,6 +319,85 @@ export async function achievementMatch({ userEmail, matchType, gameName }) {
         */
 
         return JSON.stringify(result);
+    } catch (e) {
+        console.log(e);
+        throw "ERROR";
+    }
+}
+
+export async function playtimeMatch({ userEmail, gameName }) {
+    try {
+        const matchedUsers = await matchUsersOnPlaytimeByGame(
+            userEmail,
+            gameName
+        );
+
+        const result = {
+            type: "playtime",
+            gameName,
+            matchedUsers,
+        };
+
+        return JSON.stringify(result);
+    } catch (e) {
+        console.log(e);
+        throw "ERROR";
+    }
+}
+
+export async function libraryMatch({ userEmail }) {
+    try {
+        const matchedUsers = await findTopMatchesOnLibrary(userEmail);
+
+        const result = {
+            type: "library",
+            matchedUsers,
+        };
+
+        return JSON.stringify(result);
+    } catch (e) {
+        console.log(e);
+        throw "ERROR";
+    }
+}
+
+export async function generateAutoMatches({ userEmail }) {
+    function randomIndex(arrLen) {
+        return Math.floor(Math.random() * arrLen);
+    }
+
+    try {
+        const achMatchTypes = ["iAchieved", "theyAchieved", "neitherAchieved"];
+        const chosenAchMatchType =
+            achMatchTypes[randomIndex(achMatchTypes.length)];
+
+        const top5games = await getTopFiveGames(userEmail);
+        if (top5games.length === 0) throw "Account has no games in library";
+
+        const chosenGame = top5games[randomIndex(top5games.length)];
+
+        console.log(userEmail, chosenAchMatchType, chosenGame);
+        const autoResults = [];
+        autoResults.push(
+            JSON.parse(
+                await achievementMatch({
+                    userEmail,
+                    matchType: chosenAchMatchType,
+                    gameName: chosenGame,
+                })
+            )
+        );
+
+        const chosenGame2 = top5games[randomIndex(top5games.length)];
+        autoResults.push(
+            JSON.parse(
+                await playtimeMatch({ userEmail, gameName: chosenGame2 })
+            )
+        );
+
+        autoResults.push(JSON.parse(await libraryMatch({ userEmail })));
+
+        return JSON.stringify(autoResults);
     } catch (e) {
         console.log(e);
         throw "ERROR";
