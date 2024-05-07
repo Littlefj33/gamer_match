@@ -121,6 +121,23 @@ export default function Login() {
                 </button>
             </form>
 
+            {Object.keys(serverError).length !== 0 ? (
+                <div className="text-red-500">
+                    <h2>ERROR:</h2>
+                    <ul>
+                        {Object.keys(serverError).map((key, i) => {
+                            return (
+                                <li key={i}>
+                                    {key}: {serverError[key]}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            ) : (
+                <></>
+            )}
+
             <Link href="/auth/register">
                 No account? Click here to Register!
             </Link>

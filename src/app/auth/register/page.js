@@ -202,6 +202,23 @@ export default function Register() {
                 </button>
             </form>
 
+            {Object.keys(serverError).length !== 0 ? (
+                <div className="text-red-500">
+                    <h2>ERROR:</h2>
+                    <ul>
+                        {Object.keys(serverError).map((key, i) => {
+                            return (
+                                <li key={i}>
+                                    {key}: {serverError[key]}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            ) : (
+                <></>
+            )}
+
             <Link href="/auth/login">
                 Already have an account? Click here to Login!
             </Link>
