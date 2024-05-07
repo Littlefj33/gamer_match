@@ -1,6 +1,11 @@
 "use client";
 import Link from "next/link";
-import { usernameInputCheck } from "@/utils/helpers";
+import {
+    emailValidation,
+    passwordValidation,
+    usernameValidation,
+    passwordMatch,
+} from "@/utils/helpers";
 import { redirect } from "next/navigation";
 import { useContext, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
@@ -10,7 +15,11 @@ import { doCreateUserWithEmailAndPassword } from "@/utils/firebase/FirebaseFunct
 export default function Register() {
     const { currentUser } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
-    const [errorObj, setErrorObj] = useState({});
+    const [usernameError, setUsernameError] = useState({});
+    const [emailError, setEmailError] = useState({});
+    const [passwordError, setPasswordError] = useState({});
+    const [matchPasswordError, setMatchPasswordError] = useState({});
+    const [serverError, setServerError] = useState({});
 
     const handleSignUp = async (e) => {
         e.preventDefault();
@@ -21,16 +30,29 @@ export default function Register() {
         password = password.value;
         confirmPassword = confirmPassword.value;
 
-        if (password !== confirmPassword) {
-            setErrorObj({ 0: "Passwords do not match" });
-            setLoading(false);
-            return;
+        let matchPasswordStatus = passwordMatch(password, confirmPassword);
+        if (matchPasswordStatus.isValid == false) {
+            setMatchPasswordError({
+                password: matchPasswordStatus.errors.message,
+            });
         }
-
-        let validation = usernameInputCheck(username, email, password);
-        if (validation.isValid == false) {
-            setErrorObj(validation.errors);
-            setLoading(false);
+        let usernameStatus = usernameValidation(username);
+        if (usernameStatus.isValid == false) {
+            setUsernameError({ username: usernameStatus.errors.message });
+        }
+        let emailStatus = emailValidation(email);
+        if (emailStatus.isValid == false) {
+            setEmailError({ email: emailStatus.errors.message });
+        }
+        let passwordStatus = passwordValidation(password);
+        if (passwordStatus.isValid == false) {
+            setPasswordError({ password: passwordStatus.errors.message });
+        }
+        if (
+            usernameStatus.isValid == false ||
+            emailStatus.isValid == false ||
+            passwordStatus.isValid == false
+        ) {
             return;
         }
 
@@ -38,7 +60,7 @@ export default function Register() {
             setLoading(true);
             let mongoResponse = await registerUser({ username, email, password });
             if (mongoResponse.success == false) {
-                setErrorObj({ 0: mongoResponse.error });
+                setServerError({ 0: mongoResponse.error });
                 setLoading(false);
                 return;
             }
@@ -72,10 +94,26 @@ export default function Register() {
                             autoFocus={true}
                         />
                     </label>
+                    {Object.keys(usernameError).length !== 0 ? (
+                        <div className="text-red-500">
+                            <h2>ERROR:</h2>
+                            <ul>
+                                {Object.keys(usernameError).map((key, i) => {
+                                    return (
+                                        <li key={i}>
+                                            {key}: {usernameError[key]}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
                 </div>
                 <div>
                     <label>
-                        Email:
+                        Email Address:
                         <input
                             required
                             name="email"
@@ -83,6 +121,22 @@ export default function Register() {
                             placeholder="Email"
                         />
                     </label>
+                    {Object.keys(emailError).length !== 0 ? (
+                        <div className="text-red-500">
+                            <h2>ERROR:</h2>
+                            <ul>
+                                {Object.keys(emailError).map((key, i) => {
+                                    return (
+                                        <li key={i}>
+                                            {key}: {emailError[key]}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
                 </div>
                 <div>
                     <label>
@@ -96,6 +150,22 @@ export default function Register() {
                             required
                         />
                     </label>
+                    {Object.keys(passwordError).length !== 0 ? (
+                        <div className="text-red-500">
+                            <h2>ERROR:</h2>
+                            <ul>
+                                {Object.keys(passwordError).map((key, i) => {
+                                    return (
+                                        <li key={i}>
+                                            {key}: {passwordError[key]}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
                 </div>
                 <div>
                     <label>
@@ -108,28 +178,29 @@ export default function Register() {
                             required
                         />
                     </label>
+                    {Object.keys(matchPasswordError).length !== 0 ? (
+                        <div className="text-red-500">
+                            <h2>ERROR:</h2>
+                            <ul>
+                                {Object.keys(matchPasswordError).map(
+                                    (key, i) => {
+                                        return (
+                                            <li key={i}>
+                                                {key}: {matchPasswordError[key]}
+                                            </li>
+                                        );
+                                    }
+                                )}
+                            </ul>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
                 </div>
                 <button id="submitButton" type="submit">
                     Sign Up
                 </button>
             </form>
-
-            {Object.keys(errorObj).length !== 0 ? (
-                <div className="text-red-500">
-                    <h2>ERROR:</h2>
-                    <ul>
-                        {Object.keys(errorObj).map((key, i) => {
-                            return (
-                                <li key={i}>
-                                    {key}: {errorObj[key]}
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </div>
-            ) : (
-                <></>
-            )}
 
             <Link href="/auth/login">
                 Already have an account? Click here to Login!
