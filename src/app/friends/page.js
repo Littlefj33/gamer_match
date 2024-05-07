@@ -1,10 +1,15 @@
-import {getUserByUsername} from '/backend/helpers.js';
-import Link from 'next/link';
+"use client";
 
-import AcceptButton from '@/lib/friendButton/AcceptButton';
-import RejectButton from '@/lib/friendButton/RejectButton';
+import { getUserByUsername } from "/backend/helpers.js";
+import Link from "next/link";
+
+import AcceptButton from "@/lib/friendButton/AcceptButton";
+import RejectButton from "@/lib/friendButton/RejectButton";
+import { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
 
 export default async function MyFriends() {
+    const { currentUser } = useContext(AuthContext);
 
     //TODO: Obtain username from session. Currently hardcoded until auth is implemented.
     const data = await getData("shinks");
@@ -26,8 +31,11 @@ export default async function MyFriends() {
                 <ul>
                     {friendUsernames.map((name, index) => (
                         <li key={index}>
-                            <Link href={`/profile/${friendUsernames[index]}`} passHref>
-                            <a>{name}</a>
+                            <Link
+                                href={`/profile/${friendUsernames[index]}`}
+                                passHref
+                            >
+                                <a>{name}</a>
                             </Link>
                         </li>
                     ))}
@@ -36,8 +44,8 @@ export default async function MyFriends() {
                     {pendingRequests.map((name, index) => (
                         <li key={index}>
                             <p>Pending friend request from {name}</p>
-                            <AcceptButton recipient={"shinks"} sender={name}/>
-                            <RejectButton recipient={"shinks"} sender={name}/>
+                            <AcceptButton recipient={"shinks"} sender={name} />
+                            <RejectButton recipient={"shinks"} sender={name} />
                         </li>
                     ))}
                 </ul>
@@ -48,5 +56,5 @@ export default async function MyFriends() {
     async function getData(username) {
         const user = await getUserByUsername(username);
         return user;
-      }
+    }
 }
