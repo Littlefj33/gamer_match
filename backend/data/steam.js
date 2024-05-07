@@ -101,6 +101,7 @@ export const getSteamUsersGames = async (emailAddress) => {
                     return user.gamesOwned;
                 }else{
                     user.gamesOwned = userGameData;
+                    user.gamesOwnedCount = userGameData.length
                     await setDbInfo(emailAddress, user);
                     await client.set(
                         "Games Owned: " + steamId,
@@ -153,6 +154,7 @@ export const getRecentlyPlayed = async (emailAddress) =>{
                 }
                 else{
                     user.recentlyPlayed = userRecentlyPlayedGameData;
+                    user.recentlyPlayedCount = userRecentlyPlayedGameData.length
                     await setDbInfo(emailAddress, user);
                     await client.set(
                         "Recently Played: " + steamId,
