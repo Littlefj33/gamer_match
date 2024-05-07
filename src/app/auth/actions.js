@@ -62,7 +62,6 @@ export async function getSteamUsersGames (formData) {
 
 export async function getRecentlyPlayed (formData) {
     let { emailAddress } = formData;
-    console.log(emailAddress);
     try {
         return await steamData.getRecentlyPlayed(emailAddress);
     } catch (e) {
@@ -79,3 +78,11 @@ export async function getTopFiveGames (formData) {
     }
 }
 
+export async function deleteUserData (formData) {
+    let { emailAddress } = formData;
+    try {
+        return await steamData.deleteUserData(emailAddress);
+    } catch (e) {
+        return { error: e.message, success: false };
+    }
+}

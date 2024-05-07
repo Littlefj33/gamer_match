@@ -9,7 +9,8 @@ import {
     isAccountLinked,
     getSteamUsersGames,
     getRecentlyPlayed,
-    getTopFiveGames
+    getTopFiveGames,
+    deleteUserData
 } from "../actions";
 
 export default function Register() {
@@ -77,6 +78,7 @@ export default function Register() {
 
         try {
             setLoading(true);
+            await deleteUserData({ emailAddress });
             await unlinkSteamAccount({ emailAddress });
             setLoading(false);
             window.location.reload();
