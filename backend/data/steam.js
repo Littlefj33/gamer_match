@@ -1,37 +1,45 @@
-import axios from 'axios'
-import { ResourcesError, handleErrorChecking, setDbInfo, retrieveGamesOwnedFromDb, getDbInfo} from '../helpers.js';
-import {createClient} from 'redis'
-import { users } from '../config/mongoCollections.js';
-import validation from '../helpers.js';
-const API_KEY = "C0FE0FB620850FD036A71B7373F47917"
+import axios from "axios";
+import {
+    ResourcesError,
+    handleErrorChecking,
+    setDbInfo,
+    retrieveGamesOwnedFromDb,
+    getDbInfo,
+} from "../helpers.js";
+import { createClient } from "redis";
+import { users } from "../config/mongoCollections.js";
+import validation from "../helpers.js";
+const API_KEY = "C0FE0FB620850FD036A71B7373F47917";
 
-export const updateUserSteamInfo = async(emailAddress) => {
-    emailAddress = validation.emailValidation(emailAddress)
-    await getSteamUsersGames(emailAddress)
-    await getTopFiveGames(emailAddress)
-    await getRecentlyPlayed(emailAddress)
+export const updateUserSteamInfo = async (emailAddress) => {
+    emailAddress = validation.emailValidation(emailAddress);
+    await getSteamUsersGames(emailAddress);
+    await getTopFiveGames(emailAddress);
+    await getRecentlyPlayed(emailAddress);
 
-    return "Succesfully updated user's Steam Data"
-}
+    return "Succesfully updated user's Steam Data";
+};
 
 //Function to check if a steam user exists and returns their profile data
 export const convertVanityUrl = async (customId) => {
-    customId = validation.stringCheck(customId)
-    try{
-        const response = await axios.get(`http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${API_KEY}&vanityurl=${customId}`)    
-        if(response.status === 200){
-            const returnId = response.data.response.steamid
-            return returnId
+    customId = validation.stringCheck(customId);
+    try {
+        const response = await axios.get(
+            `http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${API_KEY}&vanityurl=${customId}`
+        );
+        if (response.status === 200) {
+            const returnId = response.data.response.steamid;
+            return returnId;
         }
-    }catch(e){
-        throw new ResourcesError("Custom Id does not exist")
+    } catch (e) {
+        throw new ResourcesError("Custom Id does not exist");
     }
-    return
-}
+    return;
+};
 export const getSteamUser = async (steamId) => {
-    steamId = validation.stringCheck(steamId); 
+    steamId = validation.stringCheck(steamId);
     const checkId = parseInt(steamId);
-    if(isNaN(checkId)){
+    if (isNaN(checkId)) {
         steamId = await convertVanityUrl(steamId);
     }
     try {
@@ -68,7 +76,7 @@ export const getSteamUser = async (steamId) => {
 
 //Function that gets all games a steam user owns
 export const getSteamUsersGames = async (emailAddress) => {
-    emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress);
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
     const steamId = user.steamId;
@@ -78,6 +86,8 @@ export const getSteamUsersGames = async (emailAddress) => {
         const cacheExists = await client.exists("Games Owned: " + steamId);
         if (cacheExists) {
             const userGameData = await client.get("Games Owned: " + steamId);
+            user.gamesOwned = JSON.parse(userGameData);
+            await setDbInfo(emailAddress, user);
             return JSON.parse(userGameData);
         }
         const response = await axios.get(
@@ -91,15 +101,18 @@ export const getSteamUsersGames = async (emailAddress) => {
                 );
             } else {
                 const userGameData = data.response.games;
-                if(JSON.stringify(userGameData) === JSON.stringify(user.gamesOwned)){
-                    const user = await getDbInfo(emailAddress)
+                if (
+                    JSON.stringify(userGameData) ===
+                    JSON.stringify(user.gamesOwned)
+                ) {
+                    const user = await getDbInfo(emailAddress);
                     await client.set(
                         "Games Owned: " + steamId,
                         JSON.stringify(user.gamesOwned)
                     );
                     await client.expire("Games Owned: " + steamId, 1800); //set half hour expire time in case a user buys new games
                     return user.gamesOwned;
-                }else{
+                } else {
                     user.gamesOwned = userGameData;
                     user.gamesOwnedCount = userGameData.length
                     await setDbInfo(emailAddress, user);
@@ -113,24 +126,28 @@ export const getSteamUsersGames = async (emailAddress) => {
             }
         }
     } catch (e) {
+        console.log(e);
         throw new ResourcesError("Error fetching steam account games");
     }
 };
 
 //Function that grabs a steam users recently played games in the last two weeks
-export const getRecentlyPlayed = async (emailAddress) =>{
-    emailAddress = validation.emailValidation(emailAddress)
-    const dbInfo = await handleErrorChecking(emailAddress)
-    const user = dbInfo.user
+export const getRecentlyPlayed = async (emailAddress) => {
+    emailAddress = validation.emailValidation(emailAddress);
+    const dbInfo = await handleErrorChecking(emailAddress);
+    const user = dbInfo.user;
     const steamId = user.steamId;
     try {
         const client = createClient();
         await client.connect();
         const cacheExists = await client.exists("Recently Played: " + steamId);
         if (cacheExists) {
-            const userGameData = await client.get("Recently Played: " + steamId);
-            const jsonRes = JSON.parse(userGameData);
-            return jsonRes;
+            const userGameData = await client.get(
+                "Recently Played: " + steamId
+            );
+            user.recentlyPlayed = JSON.parse(userGameData);
+            await setDbInfo(emailAddress, user);
+            return JSON.parse(userGameData);
         }
         const response = await axios.get(
             `http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key=${API_KEY}&steamid=${steamId}&format=json`
@@ -138,21 +155,23 @@ export const getRecentlyPlayed = async (emailAddress) =>{
         if (response.status === 200) {
             const data = response.data;
             if (data.response.games.length === 0) {
-                user.recentlyPlayed = []
-                await setDbInfo(emailAddress, user)
+                user.recentlyPlayed = [];
+                await setDbInfo(emailAddress, user);
                 return [];
             } else {
                 const userRecentlyPlayedGameData = data.response.games;
-                if(JSON.stringify(userRecentlyPlayedGameData) === JSON.stringify(user.recentlyPlayed)){
-                    const user = await getDbInfo(emailAddress)
+                if (
+                    JSON.stringify(userRecentlyPlayedGameData) ===
+                    JSON.stringify(user.recentlyPlayed)
+                ) {
+                    const user = await getDbInfo(emailAddress);
                     await client.set(
                         "Recently Played: " + steamId,
                         JSON.stringify(user.recentlyPlayed)
                     );
                     await client.expire("Recently Played: " + steamId, 1800);
-                    return user.recentlyPlayed
-                }
-                else{
+                    return user.recentlyPlayed;
+                } else {
                     user.recentlyPlayed = userRecentlyPlayedGameData;
                     user.recentlyPlayedCount = userRecentlyPlayedGameData.length
                     await setDbInfo(emailAddress, user);
@@ -171,31 +190,36 @@ export const getRecentlyPlayed = async (emailAddress) =>{
 };
 
 //Function that gets a users top 5 most played games
-export const getTopFiveGames = async (emailAddress) =>{
-    emailAddress = validation.emailValidation(emailAddress)
-    const dbInfo = await handleErrorChecking(emailAddress)
-    const user = dbInfo.user
+export const getTopFiveGames = async (emailAddress) => {
+    emailAddress = validation.emailValidation(emailAddress);
+    const dbInfo = await handleErrorChecking(emailAddress);
+    const user = dbInfo.user;
     const steamId = user.steamId;
     const client = createClient();
     await client.connect();
-    const cacheExists = await client.exists("Most played: " + steamId)
-        if(cacheExists){
-            const userGameData = await client.get("Most played: " + steamId);
-            return JSON.parse(userGameData)
-        }
-    if(user.gamesOwned.length > 0){
+    const cacheExists = await client.exists("Most played: " + steamId);
+    if (cacheExists) {
+        const userGameData = await client.get("Most played: " + steamId);
+        user.top5MostPlayed = JSON.parse(userGameData);
+        await setDbInfo(emailAddress, user);
+        return JSON.parse(userGameData);
+    }
+    if (user.gamesOwned.length > 0) {
         const userGames = user.gamesOwned;
         userGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
         if (userGames.length < 5) {
-            if(JSON.stringify(user.top5MostPlayed) === JSON.stringify(userGames)){
-                const user = await getDbInfo(emailAddress)
+            if (
+                JSON.stringify(user.top5MostPlayed) ===
+                JSON.stringify(userGames)
+            ) {
+                const user = await getDbInfo(emailAddress);
                 await client.set(
                     "Most played: " + steamId,
                     JSON.stringify(user.gamesOwned)
                 );
                 await client.expire("Most played: " + steamId, 3600); //set expire time to one hour in case rankings change
                 return userGames.slice(0, user.gamesOwned.length);
-            }else{
+            } else {
                 user.top5MostPlayed = userGames;
                 await setDbInfo(emailAddress, user);
                 await client.set(
@@ -205,11 +229,10 @@ export const getTopFiveGames = async (emailAddress) =>{
                 await client.expire("Most played: " + steamId, 3600); //set expire time to one hour in case rankings change
                 return userGames.slice(0, userGames.length);
             }
-            
         }
-        const top5 = userGames.slice(0,5)
-        if(JSON.stringify(user.top5MostPlayed) === top5){
-            const user = getDbInfo(emailAddress)
+        const top5 = userGames.slice(0, 5);
+        if (JSON.stringify(user.top5MostPlayed) === top5) {
+            const user = getDbInfo(emailAddress);
             await getDbInfo(emailAddress);
             await client.set(
                 "Most played: " + steamId,
@@ -217,7 +240,7 @@ export const getTopFiveGames = async (emailAddress) =>{
             );
             await client.expire("Most played: " + steamId, 3600); //set expire time to one hour in case rankings change
             return user.top5MostPlayed;
-        }else{
+        } else {
             user.top5MostPlayed = userGames.slice(0, 5);
             await setDbInfo(emailAddress, user);
             await client.set(
@@ -234,7 +257,7 @@ export const getTopFiveGames = async (emailAddress) =>{
 
 //Function that gets a game from a users library
 export const getUserOwnedGame = async (emailAddress, gameToFind) => {
-    emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress);
     const client = createClient();
     await client.connect();
     const cacheExists = await client.exists(gameToFind);
@@ -246,31 +269,26 @@ export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
 
-    const userGames = user.gamesOwned
-    let gameFound
+    const userGames = user.gamesOwned;
+    let gameFound;
 
     //Validate that the user has the game in their steam library
-    userGames.forEach((game) =>{
-        let targetGame = game.name.toLowerCase()
-        if(targetGame === gameToFind.toLowerCase()){
-            gameFound = game
-
+    userGames.forEach((game) => {
+        let targetGame = game.name.toLowerCase();
+        if (targetGame === gameToFind.toLowerCase()) {
+            gameFound = game;
         }
     });
     if (!gameFound) {
         throw new ResourcesError(`You do not own ${gameToFind}`);
     } else {
-        await client.set(
-            gameToFind,
-            JSON.stringify(gameFound)
-        );
+        await client.set(gameToFind, JSON.stringify(gameFound));
         return gameFound;
     }
 };
 
-
 export const getPlayerAchievmentsForGame = async (emailAddress, gameToFind) => {
-    emailAddress = validation.emailValidation(emailAddress)
+    emailAddress = validation.emailValidation(emailAddress);
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
     const game = await getUserOwnedGame(emailAddress, gameToFind);
@@ -284,7 +302,6 @@ export const getPlayerAchievmentsForGame = async (emailAddress, gameToFind) => {
             "Player Achievement Data: " + emailAddress + " " + game.name
         );
         return JSON.parse(playerAchievementData);
-
     }
     const userSteamId = user.steamId;
     const gameId = game.appid;
@@ -344,230 +361,274 @@ export const getPlayerAchievmentsForGame = async (emailAddress, gameToFind) => {
 };
 
 //Function to get all games both users own
-export const matchTwoUsersOnLibrary = async (user1emailAddress, user2emailAddress) => {
+export const matchTwoUsersOnLibrary = async (
+    user1emailAddress,
+    user2emailAddress
+) => {
     const user1OwnedGames = await retrieveGamesOwnedFromDb(user1emailAddress);
     const user2OwnedGames = await retrieveGamesOwnedFromDb(user2emailAddress);
 
     const matchingGames = [];
 
-    for(const game of user1OwnedGames){
-        let matchingGame = user2OwnedGames.find(findGame => findGame.name === game.name)
-        if(matchingGame){
-            matchingGames.push(matchingGame.name)
+    for (const game of user1OwnedGames) {
+        let matchingGame = user2OwnedGames.find(
+            (findGame) => findGame.name === game.name
+        );
+        if (matchingGame) {
+            matchingGames.push(matchingGame.name);
         }
     }
 
-    return matchingGames
-}
+    return matchingGames;
+};
 
-export const getTrendingGames = async() =>{
+export const getTrendingGames = async () => {
     const usersCollection = await users();
-    const allUsers = await usersCollection.find({}).toArray()
-    let allGames = []
-    allUsers.forEach((user) =>{
-        allGames.push(user.recentlyPlayed)
-    })
-    let trendingGames = {}
+    const allUsers = await usersCollection.find({}).toArray();
+    let allGames = [];
+    allUsers.forEach((user) => {
+        allGames.push(user.recentlyPlayed);
+    });
+    let trendingGames = {};
     allGames.forEach((gameArray) => {
         gameArray.forEach((game) => {
             trendingGames[game.name] = (trendingGames[game.name] || 0) + 1;
-        })
-    })
+        });
+    });
 
-    const sortedTrendingArray = Object.entries(trendingGames).sort((a, b) => b[1] - a[1]);
-    let sortedTrendingGames = {}
-    sortedTrendingArray.forEach(function(item){
-        sortedTrendingGames[item[0]]=item[1]
-    })
+    const sortedTrendingArray = Object.entries(trendingGames).sort(
+        (a, b) => b[1] - a[1]
+    );
+    let sortedTrendingGames = {};
+    sortedTrendingArray.forEach(function (item) {
+        sortedTrendingGames[item[0]] = item[1];
+    });
 
-    return sortedTrendingGames
-}
+    return sortedTrendingGames;
+};
 //Finds the top users you share the most games with
-export const findTopMatchesOnLibrary = async (emailAddress)=>{
-    emailAddress = validation.emailValidation(emailAddress)
-    const dbInfo = await handleErrorChecking(emailAddress)
-    const user = dbInfo.user
-    const usersCollection = dbInfo.usersCollection
-    const allUsers = await usersCollection.find({}).toArray()
+export const findTopMatchesOnLibrary = async (emailAddress) => {
+    emailAddress = validation.emailValidation(emailAddress);
+    const dbInfo = await handleErrorChecking(emailAddress);
+    const user = dbInfo.user;
+    const usersCollection = dbInfo.usersCollection;
+    const allUsers = await usersCollection.find({}).toArray();
     const userFriends = user.friendList;
-    let matchedUsers = []
-    for(const otherUser of allUsers){
-        if(user.emailAddress !== otherUser.emailAddress){
-            const result = userFriends.find(item => item.username === otherUser.username)
-            if(!result){
-            const matchingGames = await matchTwoUsersOnLibrary(user.emailAddress, otherUser.emailAddress)
-            matchedUsers.push({
-                username: otherUser.username,
-                gamesShared: matchingGames,
-                })
+    let matchedUsers = [];
+    for (const otherUser of allUsers) {
+        if (user.emailAddress !== otherUser.emailAddress) {
+            const result = userFriends.find(
+                (item) => item.username === otherUser.username
+            );
+            if (!result) {
+                const matchingGames = await matchTwoUsersOnLibrary(
+                    user.emailAddress,
+                    otherUser.emailAddress
+                );
+                matchedUsers.push({
+                    username: otherUser.username,
+                    gamesShared: matchingGames,
+                });
             }
-            
-        }   
+        }
     }
 
-    return matchedUsers.sort((a, b) => b.gamesShared.length - a.gamesShared.length)
-}
-    
-
+    return matchedUsers.sort(
+        (a, b) => b.gamesShared.length - a.gamesShared.length
+    );
+};
 
 //Matches users based on achievements, this one is really messy and comments explain how it works, but this can use some cleanup
-export const matchOnAchievements = async (emailAddress, game, matchType) =>{
-    emailAddress = validation.emailValidation(emailAddress)
-    const dbInfo = await handleErrorChecking(emailAddress)
-    game = validation.stringCheck(game)
-    validation.matchType(matchType)
-    const user = dbInfo.user
+export const matchOnAchievements = async (emailAddress, game, matchType) => {
+    emailAddress = validation.emailValidation(emailAddress);
+    const dbInfo = await handleErrorChecking(emailAddress);
+    game = validation.stringCheck(game);
+    validation.matchType(matchType);
+    const user = dbInfo.user;
     const allUsersWithGame = await getAllUsersWhoOwnGame(game);
     const userFriends = user.friendList;
     //Get all user achievements. This includes names and whether or not it has been achieved
-    const userAchievements = await getPlayerAchievmentsForGame(emailAddress, game)
-    const userAchievementStates = await getAchievedStates(userAchievements) 
-    const matchedUsers = []
-    for(const otherUser of allUsersWithGame){
-        if(user.emailAddress !== otherUser.emailAddress){
-            const result = userFriends.find(item => item.username === otherUser.username)
-            if(!result){
+    const userAchievements = await getPlayerAchievmentsForGame(
+        emailAddress,
+        game
+    );
+    const userAchievementStates = await getAchievedStates(userAchievements);
+    const matchedUsers = [];
+    for (const otherUser of allUsersWithGame) {
+        if (user.emailAddress !== otherUser.emailAddress) {
+            const result = userFriends.find(
+                (item) => item.username === otherUser.username
+            );
+            if (!result) {
                 //Get all user achievements. This includes names and whether or not it has been achieved
-                const otherUserAchievements = await getPlayerAchievmentsForGame(otherUser.emailAddress, game)
-                const otherUserAchievementStates = await getAchievedStates(otherUserAchievements)
+                const otherUserAchievements = await getPlayerAchievmentsForGame(
+                    otherUser.emailAddress,
+                    game
+                );
+                const otherUserAchievementStates = await getAchievedStates(
+                    otherUserAchievements
+                );
 
                 //Find all achievements neither user has, and achievements that one user has and the other doesnt
-                const achievementData = await mapAchievementStates(userAchievementStates, otherUserAchievementStates)
-    
+                const achievementData = await mapAchievementStates(
+                    userAchievementStates,
+                    otherUserAchievementStates
+                );
+
                 //On frontend we will have a 3 ways to sort
 
                 //Say I want to grind achievements with another person
                 //sorts matched users based on highest count that neither player achieved
-                if(matchType === 'neitherAchieved'){
+                if (matchType === "neitherAchieved") {
                     matchedUsers.push({
                         username: otherUser.username,
-                        achievements: achievementData.neitherUserAchieved
-                    })
-                    matchedUsers.sort((userA, userB) =>{
-                        userB.achievements.length - userA.achievements.length
-                    })
-                    return matchedUsers
+                        achievements: achievementData.neitherUserAchieved,
+                    });
+                    matchedUsers.sort((userA, userB) => {
+                        userB.achievements.length - userA.achievements.length;
+                    });
+                    return matchedUsers;
                 }
 
                 //Say I want to help someone else get achievements I already have and know how to get
                 //Sorts matched users based on highest count of achievements I have, but the other user doesnt
-                else if(matchType === 'iAchieved'){
+                else if (matchType === "iAchieved") {
                     matchedUsers.push({
                         username: otherUser.username,
-                        achievements: achievementData.userAchieved
-                    })
-                    matchedUsers.sort((userA, userB) =>{
-                        userB.achievements.length - userA.achievements.length
-                    })
-                    return matchedUsers
+                        achievements: achievementData.userAchieved,
+                    });
+                    matchedUsers.sort((userA, userB) => {
+                        userB.achievements.length - userA.achievements.length;
+                    });
+                    return matchedUsers;
                 }
 
                 //Say I need help to get achievements i do not have
                 //Sorts matched users based on highest count of achievements the other user has, but I dont
-                if(matchType === 'theyAchieved'){
+                if (matchType === "theyAchieved") {
                     matchedUsers.push({
                         username: otherUser.username,
-                        achievements: achievementData.otherUserAchieved
-                    })
-                    matchedUsers.sort((userA, userB) =>{
-                        userB.achievements.length - userA.achievements.length
-                    })
-                    return matchedUsers
+                        achievements: achievementData.otherUserAchieved,
+                    });
+                    matchedUsers.sort((userA, userB) => {
+                        userB.achievements.length - userA.achievements.length;
+                    });
+                    return matchedUsers;
                 }
             }
         }
     }
-
-    
-}
+};
 
 export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
-    emailAddress = validation.emailValidation(emailAddress)
-    const dbInfo = await handleErrorChecking(emailAddress)
-    const usersWithGame = await getAllUsersWhoOwnGame(game)
-    const user = dbInfo.user
-    const userGameStats = await getUserOwnedGame(user.emailAddress, game)
+    emailAddress = validation.emailValidation(emailAddress);
+    const dbInfo = await handleErrorChecking(emailAddress);
+    const usersWithGame = await getAllUsersWhoOwnGame(game);
+    const user = dbInfo.user;
+    const userGameStats = await getUserOwnedGame(user.emailAddress, game);
     const userFriends = user.friendList;
-    const matchedUsers = []
-    for(const otherUser of usersWithGame){
-        if(otherUser.emailAddress !== user.emailAddress){
-            const result = userFriends.find(item => item.username === otherUser.username)
-            if(!result){
-                const otherUserGameStats = await getUserOwnedGame(otherUser.emailAddress, game)
-                const hourComparison = Math.abs(userGameStats.playtime_forever - otherUserGameStats.playtime_forever) / 60
-                if(hourComparison < 25){
+    const matchedUsers = [];
+    for (const otherUser of usersWithGame) {
+        if (otherUser.emailAddress !== user.emailAddress) {
+            const result = userFriends.find(
+                (item) => item.username === otherUser.username
+            );
+            if (!result) {
+                const otherUserGameStats = await getUserOwnedGame(
+                    otherUser.emailAddress,
+                    game
+                );
+                const hourComparison =
+                    Math.abs(
+                        userGameStats.playtime_forever -
+                            otherUserGameStats.playtime_forever
+                    ) / 60;
+                if (hourComparison < 25) {
                     matchedUsers.push({
                         username: otherUser.username,
-                        playetime: Math.floor(otherUserGameStats.playtime_forever/60)
-                    })
+                        playetime: Math.floor(
+                            otherUserGameStats.playtime_forever / 60
+                        ),
+                    });
                 }
             }
         }
     }
 
-    return matchedUsers.sort((a, b) => a.playtime_forever - b.playtime_forever)
-}
+    return matchedUsers.sort((a, b) => a.playtime_forever - b.playtime_forever);
+};
 
 //Helper function that returns achievements that neither user has, and achievements that one user has and the other doesnt.
 export const mapAchievementStates = async (userStates, otherUserStates) => {
-    if(!userStates || !otherUserStates){
-        throw new ResourcesError("You must provide both user's achievements")
+    if (!userStates || !otherUserStates) {
+        throw new ResourcesError("You must provide both user's achievements");
     }
     const neitherAchieved = [];
     const userAchieved = [];
     const otherUserAchieved = [];
 
-    
-    userStates.notAchieved.forEach(item => {
-        if (!otherUserStates.achieved.some(achievement => achievement.name === item.name)) {
+    userStates.notAchieved.forEach((item) => {
+        if (
+            !otherUserStates.achieved.some(
+                (achievement) => achievement.name === item.name
+            )
+        ) {
             neitherAchieved.push(item.name);
         }
     });
-    userStates.achieved.forEach(item => {
-        if (!otherUserStates.achieved.some(achievement => achievement.name === item.name)) {
+    userStates.achieved.forEach((item) => {
+        if (
+            !otherUserStates.achieved.some(
+                (achievement) => achievement.name === item.name
+            )
+        ) {
             userAchieved.push(item.name);
         }
     });
 
-    otherUserStates.achieved.forEach(item => {
-        if (!userStates.achieved.some(obj => obj.name === item.name)) {
+    otherUserStates.achieved.forEach((item) => {
+        if (!userStates.achieved.some((obj) => obj.name === item.name)) {
             otherUserAchieved.push(item.name);
         }
     });
 
     //lets explain these variables in this object
-    return{
+    return {
         neitherUserAchieved: neitherAchieved, //Achievements neither user has
-        userAchieved: userAchieved,  //Achievements I have, but the other user doesnt
-        otherUserAchieved: otherUserAchieved //Achievements other user has, but I dont
-    }
-}
+        userAchieved: userAchieved, //Achievements I have, but the other user doesnt
+        otherUserAchieved: otherUserAchieved, //Achievements other user has, but I dont
+    };
+};
 
 //Helper to sort achievements based on whether or not they have been achieved
-export const getAchievedStates = async (achievementList)=>{
-    if(!achievementList){throw new ResourcesError("No achievements supplied in getAchievedStates")}
-    let achieved = []
-    let notAchieved = []
-    const achievementArray = achievementList.achievements
+export const getAchievedStates = async (achievementList) => {
+    if (!achievementList) {
+        throw new ResourcesError(
+            "No achievements supplied in getAchievedStates"
+        );
+    }
+    let achieved = [];
+    let notAchieved = [];
+    const achievementArray = achievementList.achievements;
 
-    achieved = achievementArray.filter(obj => obj.achieved === 1)
-    notAchieved = achievementArray.filter(obj => obj.achieved === 0)
-    return {achieved: achieved, notAchieved: notAchieved}
-}
+    achieved = achievementArray.filter((obj) => obj.achieved === 1);
+    notAchieved = achievementArray.filter((obj) => obj.achieved === 0);
+    return { achieved: achieved, notAchieved: notAchieved };
+};
 
 //helper function to get all users in db that own a particular game
-export const getAllUsersWhoOwnGame = async (gameName) =>{
+export const getAllUsersWhoOwnGame = async (gameName) => {
     const usersCollection = await users();
-    const allUsers = await usersCollection.find({}).toArray()
-    let usersWithGame = []
-    allUsers.forEach((user)=>{
-        const userGames = user.gamesOwned
-        const gameFound = userGames.find(game => game.name === gameName)
-        if(gameFound)usersWithGame.push(user)
-    })
+    const allUsers = await usersCollection.find({}).toArray();
+    let usersWithGame = [];
+    allUsers.forEach((user) => {
+        const userGames = user.gamesOwned;
+        const gameFound = userGames.find((game) => game.name === gameName);
+        if (gameFound) usersWithGame.push(user);
+    });
 
-    return usersWithGame
-}
+    return usersWithGame;
+};
 
 //Helper function to get achievement display names
 export const getGameShema = async (gameId) => {
@@ -585,11 +646,12 @@ export const getGameShema = async (gameId) => {
         if (response.status === 200) {
             const data = response.data.game;
 
-            if(!data){
-                throw new ResourcesError("Achievements not found: Make sure the game youre supplying has achievements and your profile's achievement visibility is public")
-            }else{
-                
-                let achievementData = []
+            if (!data) {
+                throw new ResourcesError(
+                    "Achievements not found: Make sure the game youre supplying has achievements and your profile's achievement visibility is public"
+                );
+            } else {
+                let achievementData = [];
 
                 data.availableGameStats.achievements.forEach((achievement) => {
                     achievementData.push({
@@ -608,6 +670,36 @@ export const getGameShema = async (gameId) => {
     } catch (e) {
         throw new ResourcesError("Cannot get game schema");
     }
-
 };
 
+export const deleteUserData = async (emailAddress) => {
+    emailAddress = validation.emailValidation(emailAddress);
+
+    try {
+        const dbInfo = await handleErrorChecking(emailAddress);
+        const usersCollection = dbInfo.usersCollection;
+        const user = dbInfo.user;
+
+        user.top5MostPlayed = [];
+        user.gamesOwned = [];
+        user.recentlyPlayed = [];
+
+        // Remove gamesOwned, top5MostPlayed, and recentlyPlayed data from the redis cache
+        const client = createClient();
+        await client.connect();
+        await client.del("Most played: " + user.steamId);
+        await client.del("Recently Played: " + user.steamId);
+        await client.del("Games Owned: " + user.steamId);
+        await client.quit();
+
+        await usersCollection.updateOne(
+            { emailAddress: emailAddress },
+            { $set: user },
+            { returnDocument: "after" }
+        );
+
+        return { success: true };
+    } catch (e) {
+        return { error: e.message, success: false };
+    }
+};

@@ -1,5 +1,6 @@
 "use server";
 import { userData } from "../../../backend/data";
+import { steamData } from "../../../backend/data";
 
 export async function registerUser(formData) {
     let { username, email, password } = formData;
@@ -45,6 +46,42 @@ export async function isAccountLinked(formData) {
     let { emailAddress } = formData;
     try {
         return await userData.isAccountLinked(emailAddress);
+    } catch (e) {
+        return { error: e.message, success: false };
+    }
+}
+
+export async function getSteamUsersGames (formData) {
+    let { emailAddress } = formData;
+    try {
+        return await steamData.getSteamUsersGames(emailAddress);
+    } catch (e) {
+        return { error: e.message, success: false };
+    }
+}
+
+export async function getRecentlyPlayed (formData) {
+    let { emailAddress } = formData;
+    try {
+        return await steamData.getRecentlyPlayed(emailAddress);
+    } catch (e) {
+        return { error: e.message, success: false };
+    }
+}
+
+export async function getTopFiveGames (formData) {
+    let { emailAddress } = formData;
+    try {
+        return await steamData.getTopFiveGames(emailAddress);
+    } catch (e) {
+        return { error: e.message, success: false };
+    }
+}
+
+export async function deleteUserData (formData) {
+    let { emailAddress } = formData;
+    try {
+        return await steamData.deleteUserData(emailAddress);
     } catch (e) {
         return { error: e.message, success: false };
     }
