@@ -38,7 +38,7 @@ export default function Register() {
             setLoading(false);
             alert(error);
         }
-    }
+    };
 
     useEffect(() => {
         linkStatus();
@@ -68,13 +68,13 @@ export default function Register() {
         try {
             setLoading(true);
             let mongoResponse = await linkSteamAccount({
-            emailAddress,
-            steamId,
+                emailAddress,
+                steamId,
             });
             if (mongoResponse.success == false) {
-            setErrorObj({ 0: mongoResponse.error });
-            setLoading(false);
-            return;
+                setErrorObj({ 0: mongoResponse.error });
+                setLoading(false);
+                return;
             }
             setLoading(false);
             window.location.reload();
