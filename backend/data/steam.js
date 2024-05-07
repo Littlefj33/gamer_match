@@ -9,7 +9,7 @@ import {
 import { createClient } from "redis";
 import { users } from "../config/mongoCollections.js";
 import validation from "../helpers.js";
-const API_KEY = "C0FE0FB620850FD036A71B7373F47917";
+const API_KEY = process.env.STEAM_API_KEY;
 
 export const updateUserSteamInfo = async (emailAddress) => {
     emailAddress = validation.emailValidation(emailAddress);
