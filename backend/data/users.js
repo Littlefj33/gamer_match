@@ -3,6 +3,8 @@ import validation, { DBError, ResourcesError, RangeError } from "../helpers.js";
 import { getSteamUser } from "./steam.js";
 import bcrypt from "bcrypt";
 const saltRounds = 16;
+import { createClient } from "redis";
+const client = createClient();
 
 export const registerUser = async (username, emailAddress, password) => {
     validation.inputCheck(username, emailAddress, password);
@@ -166,6 +168,7 @@ export const linkSteamAccount = async (emailAddress, steamId) => {
 };
 
 export const unlinkSteamAccount = async (emailAddress) => {
+    await client.connect();
     if (!emailAddress) {
         throw new TypeError("You must provide your email");
     }
@@ -185,6 +188,7 @@ export const unlinkSteamAccount = async (emailAddress) => {
     if (!user.steamAccountUsername || !user.steamProfileLink) {
         throw new RangeError("You do not have a linked Steam Account");
     }
+    const steamId = user.steamId
     const steamUrl = user.steamProfileLink;
     user.steamAccountUsername = null;
     user.steamProfileLink = null;
@@ -197,7 +201,12 @@ export const unlinkSteamAccount = async (emailAddress) => {
 
     if (updatedUser.modifiedCount === 0)
         throw new DBError("Could not unlink Steam Account successfully");
-
+    await client.del("Games Owned: " + steamId);
+    await client.del("User Data: " + steamId)
+    await client.del("Recently Played: " + steamId)
+    await client.del("Most played: " + steamId);
+    await client.del("User Data: " + steamId)
+    await client.del("Recently Played: " + steamId)
     return { steamAccountUnlinked: steamUrl, status: true };
 };
 
