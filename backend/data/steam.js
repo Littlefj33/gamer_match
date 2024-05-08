@@ -255,16 +255,17 @@ export const getTopFiveGames = async (emailAddress) => {
 //Function that gets a game from a users library
 export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     emailAddress = validation.emailValidation(emailAddress);
-    const client = createClient();
-    await client.connect();
-    const cacheExists = await client.exists(emailAddress, + ": " + gameToFind);
-    if (cacheExists) {
-        const gameFound = await client.get(emailAddress, + ": " + gameToFind);
-        return JSON.parse(gameFound);
-    }
     gameToFind = validation.stringCheck(gameToFind);
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
+    const client = createClient();
+    await client.connect();
+    const cacheExists = await client.exists(user.steamId + ": " + gameToFind);
+    if (cacheExists) {
+        const gameFound = await client.get(user.steamId + ": " + gameToFind);
+        return JSON.parse(gameFound);
+    }
+    
 
     const userGames = user.gamesOwned;
     let gameFound;
@@ -279,7 +280,7 @@ export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     if (!gameFound) {
         throw new ResourcesError(`You do not own ${gameToFind}`);
     } else {
-        await client.set(emailAddress, + ": " + gameToFind, JSON.stringify(gameFound));
+        await client.set(user.steamId + ": " + gameToFind, JSON.stringify(gameFound));
         return gameFound;
     }
 };
