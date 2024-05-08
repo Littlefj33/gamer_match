@@ -10,6 +10,7 @@ import {
     matchOnAchievements,
     matchUsersOnPlaytimeByGame,
 } from "../../../backend/data/steam";
+import * as userData from "../../../backend/data/users";
 
 /* TODO
     - Server-side validation
@@ -148,5 +149,14 @@ export async function getFriendStatus({ username, otherUsername }) {
     } catch (e) {
         console.log(e);
         throw "ERROR";
+    }
+}
+
+export async function isAccountLinked(formData) {
+    let { emailAddress } = formData;
+    try {
+        return await userData.isAccountLinked(emailAddress);
+    } catch (e) {
+        return { error: e.message, success: false };
     }
 }

@@ -7,17 +7,35 @@ import {
     generateAutoMatches,
     libraryMatch,
     playtimeMatch,
+    isAccountLinked
 } from "./actions";
 import Profile from "./Profile";
 import { redirect } from "next/navigation";
 
 export default function Match() {
     const { currentUser } = useContext(AuthContext);
-
     const [showAchieveForm, setShowAchForm] = useState(false);
     const [showPlaytimeForm, setShowPlaytimeForm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [matchResults, setMatchResults] = useState([]);
+    const [linkedStaus, setLinkedStatus] = useState(false);
+
+    const linkStatus = async () => {
+        try {
+            setLoading(true);
+            let emailAddress = currentUser.email;
+            let mongoResponse = await isAccountLinked({ emailAddress });
+            setLinkedStatus(mongoResponse);
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            alert(error);
+        }
+    };
+
+    useEffect(() => {
+        linkStatus();
+    }, []);
 
     const handleShowForm = (type) => {
         switch (type) {
@@ -126,6 +144,10 @@ export default function Match() {
 
     if (!currentUser) {
         redirect("/auth/login");
+    }
+
+    if (!linkedStaus) {
+        redirect("/profile");
     }
 
     return (
