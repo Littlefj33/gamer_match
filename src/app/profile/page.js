@@ -3,13 +3,28 @@ import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 import { doSignOut } from "@/utils/firebase/FirebaseFunctions.js";
-import { getUser, seedDatabase } from "./actions";
+import {
+    getUser,
+    seedDatabase,
+    linkSteamAccount,
+    unlinkSteamAccount,
+    isAccountLinked,
+    getSteamUsersGames,
+    getRecentlyPlayed,
+    getTopFiveGames,
+    deleteUserData,
+} from "./actions";
 import Link from "next/link";
+import { stringCheck } from "@/utils/helpers";
 
 export default function Profile() {
     const { currentUser } = useContext(AuthContext);
-    const [loading, setLoading] = useState(true);
+    const [pageLoading, setPageLoading] = useState(false);
+    const [linkLoading, setLinkLoading] = useState(false);
+
     const [userData, setUserData] = useState({});
+    const [IdError, setIdError] = useState({});
+    const [serverError, setServerError] = useState({});
 
     const [friendListPage, setFriendListPage] = useState(1);
     const friendsPerPage = 10;
@@ -31,6 +46,7 @@ export default function Profile() {
     );
     const startOwnedPage = (recentlyOwnedListPage - 1) * recentlyOwnedPage;
 
+    /* Button functions */
     const handleSignOut = async () => {
         try {
             await doSignOut();
@@ -47,20 +63,58 @@ export default function Profile() {
         }
     };
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const result = await getUser(currentUser.displayName);
-                console.log(JSON.parse(result));
-                setUserData(JSON.parse(result));
-                setLoading(false);
-            } catch (e) {
-                console.log(e);
-            }
-        }
-        fetchData();
-    }, []);
+    const handleLink = async (e) => {
+        e.preventDefault();
+        let { steamId } = e.target;
 
+        steamId = steamId.value;
+        let emailAddress = currentUser.email;
+
+        let IdStatus = stringCheck(steamId);
+        if (IdStatus.isValid == false) {
+            setIdError({ steamId: IdStatus.errors.message });
+            return;
+        }
+
+        try {
+            setLinkLoading(true);
+            let mongoResponse = await linkSteamAccount({
+                emailAddress,
+                steamId,
+            });
+            if (mongoResponse.success == false) {
+                setServerError({ 0: mongoResponse.error });
+                setLinkLoading(false);
+                return;
+            }
+            await getSteamUsersGames({ emailAddress });
+            await getRecentlyPlayed({ emailAddress });
+            await getTopFiveGames({ emailAddress });
+            setLinkLoading(false);
+            await fetchData();
+        } catch (error) {
+            setLinkLoading(false);
+            alert(error);
+        }
+    };
+
+    const handleUnlink = async (e) => {
+        e.preventDefault();
+        let emailAddress = currentUser.email;
+
+        try {
+            setLinkLoading(true);
+            await deleteUserData({ emailAddress });
+            await unlinkSteamAccount({ emailAddress });
+            setLinkLoading(false);
+            await fetchData();
+        } catch (error) {
+            setLinkLoading(false);
+            alert(error);
+        }
+    };
+
+    /* Paging functions */
     const nextFriendPage = () => {
         if (friendListPage < totalFriendPages) {
             setFriendListPage(friendListPage + 1);
@@ -94,11 +148,29 @@ export default function Profile() {
         }
     };
 
+    /* Execute on page load */
+    const fetchData = async () => {
+        try {
+            setPageLoading(true);
+            const result = await getUser(currentUser.displayName);
+            console.log(JSON.parse(result));
+            setUserData(JSON.parse(result));
+            setPageLoading(false);
+        } catch (e) {
+            setPageLoading(false);
+            console.log(e);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
     if (!currentUser) {
         redirect("/auth/login");
     }
 
-    if (loading) {
+    if (pageLoading) {
         return (
             <div>
                 <h2>Loading Your Information...</h2>
@@ -112,43 +184,82 @@ export default function Profile() {
                         <h1 className="text-center text-3xl font-bold mb-6 text-persian-blue">
                             Welcome, {userData.username}!
                         </h1>
-                        <div className="grid grid-cols-5 gap-4 text-center">
-                            <div>
+                        <div className="flex justify-evenly text-center">
+                            <div className="w-1/5">
                                 <h3 className="underline font-bold text-lg">
                                     General
                                 </h3>
-                                <div>
+                                <div className="flex flex-col">
                                     <div>
-                                        <p className="font-bold inline">
-                                            Email Address:{" "}
+                                        <p className="font-bold">
+                                            Email Address:
                                         </p>
-                                        <p className="inline">
+                                        <p className="">
                                             {userData.emailAddress}
                                         </p>
                                     </div>
 
                                     {userData.steamId ? (
                                         <div>
-                                            <p className="font-bold inline">
-                                                SteamId:{" "}
+                                            <p className="font-bold">
+                                                Steam Id:
                                             </p>
-                                            <p className="inline">
+                                            <p className="font-semibold">
                                                 {userData.steamId}
                                             </p>
+
+                                            <button
+                                                className="my-3 max-w-48 w-full h-10 bg-persian-blue text-white font-bold rounded-full"
+                                                onClick={handleUnlink}
+                                            >
+                                                Unlink Steam Account
+                                            </button>
                                         </div>
                                     ) : (
-                                        <p className="italic text-red-800">
-                                            No SteamId
-                                        </p>
+                                        <div>
+                                            <p className="italic text-red-800">
+                                                No SteamId
+                                            </p>
+
+                                            {linkLoading ? (
+                                                <div className="flex justify-center items-center text-center mx-10">
+                                                    <div className="p-2 border-white bg-white rounded-full">
+                                                        Loading...
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <form onSubmit={handleLink}>
+                                                    <div>
+                                                        <label>
+                                                            Steam ID:
+                                                            <input
+                                                                required
+                                                                name="steamId"
+                                                                type="text"
+                                                                placeholder="Steam ID"
+                                                                className="mx-4 max-w-48 bg-white shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
+                                                            />
+                                                        </label>
+                                                    </div>
+                                                    <button
+                                                        id="submitButton"
+                                                        type="submit"
+                                                        className="my-3 max-w-48 w-full h-10 bg-persian-blue text-white font-bold rounded-full"
+                                                    >
+                                                        Link Steam Account
+                                                    </button>
+                                                </form>
+                                            )}
+                                        </div>
                                     )}
 
                                     {userData.steamAccountUsername ? (
                                         <div>
-                                            <p className="font-bold inline">
-                                                Steam Account:{" "}
+                                            <p className="font-bold">
+                                                Steam Account:
                                             </p>
                                             <Link
-                                                className="inline"
+                                                className=""
                                                 href={userData.steamProfileLink}
                                             >
                                                 {userData.steamAccountUsername}
@@ -162,7 +273,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="w-1/5">
                                 {userData.top5MostPlayed.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
@@ -197,7 +308,7 @@ export default function Profile() {
                                 )}
                             </div>
 
-                            <div>
+                            <div className="w-1/5">
                                 {userData.recentlyPlayed.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
@@ -262,8 +373,7 @@ export default function Profile() {
                                     </div>
                                 )}
                             </div>
-
-                            <div>
+                            <div className="w-1/5">
                                 {userData.gamesOwned.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
@@ -328,8 +438,7 @@ export default function Profile() {
                                     </div>
                                 )}
                             </div>
-
-                            <div>
+                            <div className="w-1/5">
                                 {userData.friendList.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
