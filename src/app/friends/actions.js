@@ -1,10 +1,10 @@
-/* actions to communicate to backend to get user info */
 "use server";
 
 import {
-    getUserByUsername,
-    updateSentPendingRequests,
-} from "../../../backend/helpers";
+    getPendingRequests,
+    getSentRequests,
+} from "../../../backend/data/friends";
+import { getUserByUsername } from "../../../backend/helpers";
 
 export async function getUser(username) {
     try {
@@ -15,15 +15,19 @@ export async function getUser(username) {
     }
 }
 
-export async function getRequests(name, sent, nameReq, pending) {
+export async function getSent(username) {
     try {
-        const pendingReqs = await updateSentPendingRequests(
-            name,
-            sent,
-            nameReq,
-            pending
-        );
-        return JSON.stringify(pendingReqs);
+        const sent = await getSentRequests(username);
+        return JSON.stringify(sent);
+    } catch (e) {
+        return JSON.stringify({ error: e.message, success: false });
+    }
+}
+
+export async function getPending(username) {
+    try {
+        const pending = await getPendingRequests(username);
+        return JSON.stringify(pending);
     } catch (e) {
         return JSON.stringify({ error: e.message, success: false });
     }
