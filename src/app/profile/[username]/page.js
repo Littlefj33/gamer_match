@@ -2,13 +2,15 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
-import { getUser } from "./actions";
+import { getUser, getSteamInfo, imageModify } from "./actions";
 import Link from "next/link";
 
-export default function Profile() {
+export default function Profile({params}) {
     const { currentUser } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState({});
+    const [profileData, setProfileData] = useState({});
+    const [oldProfileData, setOldProfileData] = useState({});
 
     const [friendListPage, setFriendListPage] = useState(1);
     const friendsPerPage = 10;
@@ -33,8 +35,20 @@ export default function Profile() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const result = await getUser(currentUser.displayName);
-                console.log(JSON.parse(result));
+                console.log("hi")
+                const result = await getUser(params.username);
+                console.log(params.username)
+                //console.log(JSON.parse(result))
+                const steamData = await getSteamInfo(JSON.parse(result).steamId)
+                console.log(JSON.parse(steamData))
+                let profileUrl = JSON.parse(steamData).avatarfull;
+                console.log(profileUrl);
+                console.log(params.username)
+                const modifiedProfile = await imageModify(profileUrl)
+                setUserData(JSON.parse(result));
+                setProfileData(modifiedProfile)
+                setOldProfileData(profileUrl)
+                setLoading(false); 
                 setUserData(JSON.parse(result));
                 setLoading(false);
             } catch (e) {
@@ -81,9 +95,9 @@ export default function Profile() {
         redirect("/auth/login");
     }
 
-    if (currentUser) {
-        redirect("/profile");
-    }
+    //  if (currentUser) {
+    //      redirect("/profile");
+    // }
 
     if (loading) {
         return (
@@ -94,6 +108,8 @@ export default function Profile() {
     } else {
         return (
             <div>
+                <img src={profileData}/>
+                <img src={oldProfileData}/>
                 {Object.keys(userData).length !== 0 ? (
                     <div>
                         <h1 className="text-center text-3xl font-bold mb-6 text-persian-blue">

@@ -61,11 +61,11 @@ export const getSteamUser = async (steamId) => {
                 );
             } else {
                 const playerData = data.response.players[0];
-                // await client.set(
-                //     "User Data: " + steamId,
-                //     JSON.stringify(playerData)
-                // );
-                // await client.expire("User Data: " + steamId, 1800); //set expire time to half hour in case user changes profile data
+                await client.set(
+                    "User Data: " + steamId,
+                    JSON.stringify(playerData)
+                );
+                await client.expire("User Data: " + steamId, 1800); //set expire time to half hour in case user changes profile data
                 return playerData;
             }
         }

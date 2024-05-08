@@ -3,6 +3,11 @@
 
 import { getUserByUsername } from "../../../backend/helpers";
 import { getSteamUser } from "../../../backend/data/steam";
+import { userData, steamData } from "../../../backend/data";
+import {
+    acceptFriendRequest,
+    sendFriendRequest,
+} from "../../../backend/data/friends";
 import im from "imagemagick"
 import axios from 'axios'
 
@@ -52,23 +57,6 @@ export async function imageModify(imgUrl) {
     } catch (error) {
         reject(error);
     }});
-}/* actions to communicate to backend to get user info */
-"use server";
-
-import { userData, steamData } from "../../../backend/data";
-import {
-    acceptFriendRequest,
-    sendFriendRequest,
-} from "../../../backend/data/friends";
-import { getUserByUsername } from "../../../backend/helpers";
-
-export async function getUser(username) {
-    try {
-        const result = await getUserByUsername(username);
-        return JSON.stringify(result);
-    } catch (e) {
-        return JSON.stringify({ error: e.message, success: false });
-    }
 }
 
 export async function seedDatabase() {

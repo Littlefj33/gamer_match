@@ -1,9 +1,6 @@
 import {getUserByUsername} from '/backend/helpers.js';
 import Link from 'next/link';
 
-import AcceptButton from '@/lib/friendButton/AcceptButton';
-import RejectButton from '@/lib/friendButton/RejectButton';
-
 export default async function MyFriends() {
 
     //TODO: Obtain username from session. Currently hardcoded until auth is implemented.
