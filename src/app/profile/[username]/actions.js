@@ -36,12 +36,12 @@ export async function imageModify(imgUrl) {
         console.log(Buffer.from(bufferedChunks, 'binary'))
 
         const newImageBuffer = await new Promise((resolve, reject) => {
-            const convertProcess = im.convert([
-            'srcData:-',
-            '-resize', '400x400',
-            '-gravity', 'center',
-            'jpg:-'
-            ], (err, stdout, stderr) => {
+            im.resize({
+                srcData: bufferedChunks,
+                width: 400, 
+                height: 400,
+                gravity: 'Center'
+            }, (err, stdout, stderr) => {
             if (err) {
                 console.log(stderr)
                 reject(err);
@@ -49,12 +49,11 @@ export async function imageModify(imgUrl) {
                 resolve(Buffer.from(stdout, 'binary'))
             }
             })
-            convertProcess.stdin.write(bufferedChunks);
-            convertProcess.stdin.end();
+            // convertProcess.stdin.write(bufferedChunks);
+            // convertProcess.stdin.end();
 
-            convertProcess.stdin.on('drain', () => {
-                console.log('Stdin flushed.');
-        });
+            // convertProcess.stdin.on('drain', () => {
+            //     console.log('Stdin flushed.');
         });
         console.log(Buffer.from(newImageBuffer, 'binary'))
         const squareImage = await loadImage(newImageBuffer);
