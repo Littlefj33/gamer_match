@@ -236,7 +236,7 @@ export default function Profile({ params }) {
                                                     Next
                                                 </button>
                                             )}
-                                            <h3>
+                                            <h3 className="font-bold">
                                                 Page {curRecentPlayPage + 1}/
                                                 {Math.ceil(
                                                     userData.recentlyPlayed
@@ -318,7 +318,7 @@ export default function Profile({ params }) {
                                                     Next
                                                 </button>
                                             )}
-                                            <h3>
+                                            <h3 className="font-bold">
                                                 Page {curOwnedPage + 1}/
                                                 {Math.ceil(
                                                     userData.gamesOwned.length /
@@ -405,7 +405,7 @@ export default function Profile({ params }) {
                                                     Next
                                                 </button>
                                             )}
-                                            <h3>
+                                            <h3 className="font-bold">
                                                 Page {curFriendPage + 1}/
                                                 {Math.ceil(
                                                     userData.friendList.length /

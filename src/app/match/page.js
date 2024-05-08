@@ -9,6 +9,7 @@ import {
     playtimeMatch,
     isAccountLinked,
 } from "./actions";
+import { stringCheck } from "@/utils/helpers";
 import Profile from "./Profile";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -20,6 +21,9 @@ export default function Match() {
     const [loading, setLoading] = useState(false);
     const [matchResults, setMatchResults] = useState([]);
     const [linkedStatus, setLinkedStatus] = useState(false);
+    const [gameNameMatchError, setGameNameMatchError] = useState({});
+    const [gameNameTimeError, setGameNameTimeError] = useState({});
+    const [serverError, setServerError] = useState({});
 
     const handleShowForm = (type) => {
         switch (type) {
@@ -42,10 +46,13 @@ export default function Match() {
         matchType = matchType.value;
         gameName = gameName.value;
 
-        /**
-         * TODO
-         * - Client-side validation
-         */
+        let gameNameStatus = stringCheck(gameName);
+        if (gameNameStatus.validString == false) {
+            setGameNameMatchError({ gameName: gameNameStatus.errors.message });
+            return;
+        } else {
+            setGameNameMatchError({});
+        }
 
         try {
             setShowAchForm(false);
@@ -55,12 +62,19 @@ export default function Match() {
                 matchType,
                 gameName,
             });
+            if (result.error) {
+                setServerError(result.error);
+                setLoading(false);
+                return;
+            }
 
+            setServerError({});
             result = JSON.parse(result);
             setMatchResults([result, ...matchResults]);
             setLoading(false);
         } catch (e) {
-            console.log("ERROR", e);
+            setLoading(false);
+            alert(e);
         }
     };
 
@@ -69,10 +83,11 @@ export default function Match() {
         let { gameName } = e.target;
         gameName = gameName.value;
 
-        /**
-         * TODO
-         * - Client-side validation
-         */
+        let gameNameStatus = stringCheck(gameName);
+        if (gameNameStatus.validString == false) {
+            setGameNameTimeError({ gameName: gameNameStatus.errors.message });
+            return;
+        }
 
         try {
             setShowPlaytimeForm(false);
@@ -81,12 +96,19 @@ export default function Match() {
                 userEmail: currentUser.email,
                 gameName,
             });
+            if (result.error) {
+                setServerError(result.error);
+                setLoading(false);
+                return;
+            }
 
+            setServerError({});
             result = JSON.parse(result);
             setMatchResults([result, ...matchResults]);
             setLoading(false);
         } catch (e) {
-            console.log("ERROR", e);
+            setLoading(false);
+            alert(e);
         }
     };
 
@@ -105,14 +127,9 @@ export default function Match() {
         }
     };
 
-    useEffect(() => {
-        console.log("matchResults", matchResults);
-    }, [matchResults]);
-
-    /* Generate random matches on page load */
-    useEffect(() => {
-        linkStatus();
-    }, []);
+    // useEffect(() => {
+    //     console.log("matchResults", matchResults);
+    // }, [matchResults]);
 
     useEffect(() => {
         async function autoGenerate() {
@@ -122,6 +139,7 @@ export default function Match() {
             autoResults = JSON.parse(autoResults);
             setMatchResults(autoResults);
         }
+        linkStatus();
         if (linkedStatus) {
             autoGenerate();
         }
@@ -206,6 +224,30 @@ export default function Match() {
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
                                     </label>
+                                    {Object.keys(gameNameMatchError).length !==
+                                    0 ? (
+                                        <div className="text-red-500">
+                                            <h2>ERROR:</h2>
+                                            <ul>
+                                                {Object.keys(
+                                                    gameNameMatchError
+                                                ).map((key, i) => {
+                                                    return (
+                                                        <li key={i}>
+                                                            {key}:{" "}
+                                                            {
+                                                                gameNameMatchError[
+                                                                    key
+                                                                ]
+                                                            }
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <></>
+                                    )}
                                     <button
                                         type="submit"
                                         className="w-20 bg-persian-blue rounded-full text-white"
@@ -248,6 +290,30 @@ export default function Match() {
                                     >
                                         Search
                                     </button>
+                                    {Object.keys(gameNameTimeError).length !==
+                                    0 ? (
+                                        <div className="text-red-500">
+                                            <h2>ERROR:</h2>
+                                            <ul>
+                                                {Object.keys(
+                                                    gameNameTimeError
+                                                ).map((key, i) => {
+                                                    return (
+                                                        <li key={i}>
+                                                            {key}:{" "}
+                                                            {
+                                                                gameNameTimeError[
+                                                                    key
+                                                                ]
+                                                            }
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <></>
+                                    )}
                                 </div>
                             </form>
                         ) : (
@@ -265,6 +331,13 @@ export default function Match() {
                     </div>
                 </div>
             </div>
+
+            {serverError && serverError.length > 0 ? (
+                <div className="text-red-500">
+                    <h2>ERROR:</h2>
+                    <p>{serverError}</p>
+                </div>
+            ) : null}
 
             {/* Matching results */}
             {loading ? (
