@@ -669,3 +669,38 @@ export const getGameShema = async (gameId) => {
         throw new ResourcesError("Cannot get game schema");
     }
 };
+
+
+export const deleteUserData = async (emailAddress) => {
+    emailAddress = validation.emailValidation(emailAddress);
+
+    try {
+        const dbInfo = await handleErrorChecking(emailAddress);
+        const usersCollection = dbInfo.usersCollection;
+        const user = dbInfo.user;
+
+        user.top5MostPlayed = [];
+        user.gamesOwned = [];
+        user.recentlyPlayed = [];
+        user.gamesOwnedCount = 0;
+        user.recentlyPlayedCount = 0;
+
+        // Remove gamesOwned, top5MostPlayed, and recentlyPlayed data from the redis cache
+        const client = createClient();
+        await client.connect();
+        await client.del("Most played: " + user.steamId);
+        await client.del("Recently Played: " + user.steamId);
+        await client.del("Games Owned: " + user.steamId);
+        await client.quit();
+
+        await usersCollection.updateOne(
+            { emailAddress: emailAddress },
+            { $set: user },
+            { returnDocument: "after" }
+        );
+
+        return { success: true };
+    } catch (e) {
+        return { error: e.message, success: false };
+    }
+};

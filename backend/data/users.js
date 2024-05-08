@@ -150,7 +150,7 @@ export const linkSteamAccount = async (emailAddress, steamId) => {
 
     user.steamAccountUsername = steamUserData.personaname;
     user.steamProfileLink = steamUserData.profileurl;
-    user.steamId = steamId;
+    user.steamId = steamUserData.steamid;
     user.avatarLink = steamUserData.avatarfull
 
 
