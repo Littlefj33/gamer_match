@@ -414,7 +414,7 @@ export const findTopMatchesOnLibrary = async (emailAddress) => {
     const userFriends = user.friendList;
     let matchedUsers = [];
     for (const otherUser of allUsers) {
-        if(!user.steamProfileLink || user.steamProfileLink === ""){continue}
+        if(!otherUser.steamProfileLink || otherUser.steamProfileLink === ""){continue}
         if (user.emailAddress !== otherUser.emailAddress) {
             const result = userFriends.find(
                 (item) => item.username === otherUser.username
@@ -454,7 +454,7 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
     const userAchievementStates = await getAchievedStates(userAchievements);
     const matchedUsers = [];
     for (const otherUser of allUsersWithGame) {
-        if(!user.steamProfileLink || user.steamProfileLink === ""){continue}
+        if(!otherUser.steamProfileLink || otherUser.steamProfileLink === ""){continue}
         if (user.emailAddress !== otherUser.emailAddress) {
             const result = userFriends.find(
                 (item) => item.username === otherUser.username
@@ -529,7 +529,7 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
     const userFriends = user.friendList;
     const matchedUsers = [];
     for (const otherUser of usersWithGame) {
-        if(!user.steamProfileLink || user.steamProfileLink === ""){continue}
+        if(!otherUser.steamProfileLink || otherUser.steamProfileLink === ""){continue}
         if (otherUser.emailAddress !== user.emailAddress) {
             const result = userFriends.find(
                 (item) => item.username === otherUser.username
