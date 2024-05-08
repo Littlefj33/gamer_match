@@ -10,7 +10,8 @@ import {
     getSteamUsersGames,
     getRecentlyPlayed,
     getTopFiveGames,
-    deleteUserData
+    deleteUserData,
+    getSteamId,
 } from "../actions";
 
 export default function Register() {
@@ -19,22 +20,33 @@ export default function Register() {
     const [isLinked, setIsLinked] = useState(false);
     const [IdError, setIdError] = useState({});
     const [serverError, setServerError] = useState({});
+    const [steamId, setSteamId] = useState("");
 
     const linkStatus = async () => {
         try {
             setLoading(true);
             let emailAddress = currentUser.email;
             let mongoResponse = await isAccountLinked({ emailAddress });
-            await setIsLinked(mongoResponse);
+            setIsLinked(mongoResponse);
             setLoading(false);
         } catch (error) {
             setLoading(false);
-            alert(error);
+            alert(error); // TODO Present error as text on page instead of alerting
         }
     };
 
     useEffect(() => {
         linkStatus();
+        try {
+            const result = getSteamId({ username: currentUser.displayName });
+            if (result.success) {
+                setSteamId(result.steamId);
+            } else {
+                setSteamId("");
+            }
+        } catch (e) {
+            console.log(e);
+        } // TODO HERE
     }, []);
 
     const handleLink = async (e) => {
@@ -89,21 +101,39 @@ export default function Register() {
     };
 
     if (!currentUser) {
-        redirect("/");
+        redirect("/auth/login");
     }
 
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex justify-center items-center text-center mx-10">
+                <div className="p-2 border-white bg-white rounded-full">
+                    Loading...
+                </div>
+            </div>
+        );
     }
 
     return (
         <div>
             {isLinked ? (
-                <form onSubmit={handleUnlink}>
-                    <button id="unlinkButton" type="submit">
+                <div className="flex flex-col text-center text-black text-base">
+                    <h1>Your account is already linked to a Steam account!</h1>
+                    <h2>
+                        Current Steam Id:
+                        <h3 className="ml-1 font-semibold">{steamId}</h3>
+                    </h2>
+                    <h2>
+                        If you would like to unlink, please press "Unlink Steam
+                        Account" below.
+                    </h2>
+                    <button
+                        className="mt-4 bg-persian-blue text-white font-bold py-1 px-3 rounded-full"
+                        onClick={handleUnlink}
+                    >
                         Unlink Steam Account
                     </button>
-                </form>
+                </div>
             ) : (
                 <form onSubmit={handleLink}>
                     <div>
@@ -157,7 +187,6 @@ export default function Register() {
             ) : (
                 <></>
             )}
-            
         </div>
     );
 }
