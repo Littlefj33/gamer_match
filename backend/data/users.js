@@ -153,6 +153,8 @@ export const linkSteamAccount = async (emailAddress, steamId) => {
     user.steamId = steamId;
     user.avatarLink = steamUserData.avatarfull
 
+
+
     const updatedUser = await usersCollection.updateOne(
         { emailAddress: emailAddress },
         { $set: user },

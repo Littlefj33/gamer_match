@@ -271,38 +271,38 @@ export const checkRequestStatus = async (senderUsername, recipientUsername) => {
 
     for (const friend of yourFriends) {
         if (friend.username === recipient.username) {
-            return {isFriend: true};
+            return { isFriend: true };
         }
     }
 
-    for(const sentRequest of yourSent){
-        if(sentRequest === recipient.username){
-            return {isFriend: false, requestSent: true}
+    for (const sentRequest of yourSent) {
+        if (sentRequest === recipient.username) {
+            return { isFriend: false, requestSent: true };
         }
     }
-    
-    return {isFriend: false, requestSent: false}
-}
+
+    return { isFriend: false, requestSent: false };
+};
 
 export const getPendingRequests = async (username) => {
     const usersCollection = await users();
-    const user = await usersCollection.findOne({username: username})
+    const user = await usersCollection.findOne({ username: username });
 
-    return user.pendingRequests
-}
+    return user.pendingRequests;
+};
 export const getSentRequests = async (username) => {
     const usersCollection = await users();
-    const user = await usersCollection.findOne({username: username})
+    const user = await usersCollection.findOne({ username: username });
 
-    return user.sentRequests
-}
+    return user.sentRequests;
+};
 
 export const getUsersFriends = async (username) => {
     const usersCollection = await users();
-    const user = await usersCollection.findOne({username: username})
-    let friends = []
-    user.friendList.forEach((friend)=>{
-        friends.push(friend.username)
-    })
-    return friends
-}
+    const user = await usersCollection.findOne({ username: username });
+    let friends = [];
+    user.friendList.forEach((friend) => {
+        friends.push(friend.username);
+    });
+    return friends;
+};

@@ -66,11 +66,11 @@ export async function setDbInfo(emailAddress, user) {
     return;
 }
 
-export async function getDbInfo(emailAddress){
-    emailAddress = exportedMethods.emailValidation(emailAddress)
+export async function getDbInfo(emailAddress) {
+    emailAddress = exportedMethods.emailValidation(emailAddress);
     const usersCollection = await users();
-    const user = await usersCollection.findOne({emailAddress: emailAddress})
-    return user
+    const user = await usersCollection.findOne({ emailAddress: emailAddress });
+    return user;
 }
 export async function handleErrorChecking(emailAddress) {
     if (!emailAddress) {
@@ -97,14 +97,14 @@ export async function handleErrorChecking(emailAddress) {
     return { user: user, usersCollection: usersCollection };
 }
 export const retrieveGamesOwnedFromDb = async (emailAddress) => {
-  const dbInfo = await handleErrorChecking(emailAddress)
-  const user = dbInfo.user
-  if(user.gamesOwned.length >0 ){
-      return user.gamesOwned
-  }else{
-      throw new ResourcesError("User does not have any owned games")
-  }
-}
+    const dbInfo = await handleErrorChecking(emailAddress);
+    const user = dbInfo.user;
+    if (user.gamesOwned.length > 0) {
+        return user.gamesOwned;
+    } else {
+        throw new ResourcesError("User does not have any owned games");
+    }
+};
 export async function updateFriendsList(senderData, recipientData) {
     const usersCollection = await users();
     let recipientFriends = recipientData.friendList;
@@ -167,12 +167,11 @@ export async function updateSentPendingRequests(
         pendingRequests: pendingRequests,
         pendingCount: pendingRequests.length
     };
-  
-  const insertSent = {
+
+    const insertSent = {
         sentRequests: sentRequests,
         sentCount: sentRequests.length
     };
-
 
     const updatePending = await usersCollection.updateOne(
         { username: targetUsername },
@@ -193,7 +192,7 @@ export async function updateSentPendingRequests(
 
     return true;
 }
- 
+
 export async function getUserInfo(senderName, recipientName) {
     senderName = exportedMethods.stringCheck(senderName);
     recipientName = exportedMethods.stringCheck(recipientName);
@@ -228,7 +227,7 @@ export async function getUserByUsername(username) {
 
     const usersCollection = await users();
     const user = await usersCollection.findOne({
-        username: username
+        username: username,
     });
 
     if (!user) {
@@ -236,15 +235,16 @@ export async function getUserByUsername(username) {
     }
 
     return user;
-
 }
 
 const exportedMethods = {
-    matchType(arg){
-        arg = this.stringCheck(arg)
-        const validTypes = "neitherAchieved , iAchieved , theyAchieved"
-        if(!validTypes.includes(arg)){
-          throw new RangeError("Matchtype can only be on of the following options: neitherAchieved, iAchieved, theyAchieved")
+    matchType(arg) {
+        arg = this.stringCheck(arg);
+        const validTypes = "neitherAchieved , iAchieved , theyAchieved";
+        if (!validTypes.includes(arg)) {
+            throw new RangeError(
+                "Matchtype can only be on of the following options: neitherAchieved, iAchieved, theyAchieved"
+            );
         }
     },
 
