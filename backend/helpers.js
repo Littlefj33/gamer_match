@@ -102,7 +102,7 @@ export const retrieveGamesOwnedFromDb = async (emailAddress) => {
     if (user.gamesOwned.length > 0) {
         return user.gamesOwned;
     } else {
-        throw new ResourcesError("User does not have any owned games");
+        return []
     }
 };
 export async function updateFriendsList(senderData, recipientData) {
