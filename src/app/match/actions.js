@@ -11,6 +11,9 @@ import {
     matchUsersOnPlaytimeByGame,
 } from "../../../backend/data/steam";
 import * as userData from "../../../backend/data/users";
+import im from "imagemagick"
+import axios from 'axios'
+import {createCanvas, loadImage} from 'canvas'
 
 /* TODO
     - Server-side validation
@@ -159,4 +162,68 @@ export async function isAccountLinked(formData) {
     } catch (e) {
         return { error: e.message, success: false };
     }
+}
+
+export async function imageModify(imgUrl) {
+    return new Promise(async (resolve, reject) => {
+    console.log(imgUrl)
+    try {
+        const response = await axios.get(imgUrl, { responseType: 'arraybuffer'})
+       
+        const bufferedChunks = response.data
+        console.log(Buffer.from(bufferedChunks, 'binary'))
+
+        const newImageBuffer = await new Promise((resolve, reject) => {
+            im.resize({
+                srcData: bufferedChunks,
+                width: 400, 
+                height: 400,
+                gravity: 'Center'
+            }, (err, stdout, stderr) => {
+            if (err) {
+                console.log(stderr)
+                reject(err);
+            } else {
+                resolve(Buffer.from(stdout, 'binary'))
+            }
+            })
+            // convertProcess.stdin.write(bufferedChunks);
+            // convertProcess.stdin.end();
+
+            // convertProcess.stdin.on('drain', () => {
+            //     console.log('Stdin flushed.');
+        });
+        console.log(Buffer.from(newImageBuffer, 'binary'))
+        const squareImage = await loadImage(newImageBuffer);
+
+        const canvas = createCanvas(squareImage.width, squareImage.height);
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#b5deef'; // Same color as our header background
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+
+        const cornerRadius = 0.5 * Math.min(canvas.width, canvas.height);
+        
+        ctx.beginPath();
+        ctx.moveTo(cornerRadius, 0);
+        ctx.arcTo(canvas.width, 0, canvas.width, canvas.height, cornerRadius);
+        ctx.arcTo(canvas.width, canvas.height, 0, canvas.height, cornerRadius);
+        ctx.arcTo(0, canvas.height, 0, 0, cornerRadius);
+        ctx.arcTo(0, 0, canvas.width, 0, cornerRadius);
+        ctx.closePath();
+        ctx.clip();
+
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(squareImage, 0, 0, canvas.width, canvas.height);
+        
+        const circularImageBuffer = canvas.toBuffer('image/jpeg');
+        const base64Image = circularImageBuffer.toString('base64');
+
+        resolve(`data:image/jpg;base64,${base64Image}`);
+        
+    } catch (error) {
+        reject(error);
+    }});
 }

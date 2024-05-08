@@ -116,27 +116,27 @@ export default function Profile({params}) {
                         <h1 className="text-center text-3xl font-bold mb-6 text-persian-blue">
                             Welcome to {userData.username}'s Page!
                         </h1>
-                        <div className="grid grid-cols-5 gap-4 text-center">
-                            <div>
+                        <div className="flex justify-evenly text-center">
+                            <div className="w-1/5">
                                 <h3 className="underline font-bold text-lg">
                                     General
                                 </h3>
                                 <div>
                                     <div>
-                                        <p className="font-bold inline">
-                                            Email Address:{" "}
+                                        <p className="font-bold">
+                                            Email Address:
                                         </p>
-                                        <p className="inline">
+                                        <p className="">
                                             {userData.emailAddress}
                                         </p>
                                     </div>
 
                                     {userData.steamId ? (
                                         <div>
-                                            <p className="font-bold inline">
-                                                SteamId:{" "}
+                                            <p className="font-bold">
+                                                SteamId:
                                             </p>
-                                            <p className="inline">
+                                            <p className="">
                                                 {userData.steamId}
                                             </p>
                                         </div>
@@ -148,11 +148,11 @@ export default function Profile({params}) {
 
                                     {userData.steamAccountUsername ? (
                                         <div>
-                                            <p className="font-bold inline">
-                                                Steam Account:{" "}
+                                            <p className="font-bold ">
+                                                Steam Account:
                                             </p>
                                             <Link
-                                                className="inline"
+                                                className=""
                                                 href={userData.steamProfileLink}
                                             >
                                                 {userData.steamAccountUsername}
@@ -166,7 +166,7 @@ export default function Profile({params}) {
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="w-1/5">
                                 {userData.top5MostPlayed.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
@@ -201,7 +201,7 @@ export default function Profile({params}) {
                                 )}
                             </div>
 
-                            <div>
+                            <div className="w-1/5">
                                 {userData.recentlyPlayed.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
@@ -261,7 +261,7 @@ export default function Profile({params}) {
                                 )}
                             </div>
 
-                            <div>
+                            <div className="w-1/5">
                                 {userData.gamesOwned.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
@@ -321,7 +321,7 @@ export default function Profile({params}) {
                                 )}
                             </div>
 
-                            <div>
+                            <div className="w-1/5">
                                 {userData.friendList.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">

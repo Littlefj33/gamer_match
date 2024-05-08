@@ -96,7 +96,9 @@ export const getSteamUsersGames = async (emailAddress) => {
         );
         if (response.status === 200) {
             const data = response.data;
+            console.log("got here")
             if (data.response.games.length === 0) {
+                console.log("not that one")
                 throw new ResourcesError(
                     "Steam account does not have any games!"
                 );
@@ -114,6 +116,7 @@ export const getSteamUsersGames = async (emailAddress) => {
                     await client.expire("Games Owned: " + steamId, 1800); //set half hour expire time in case a user buys new games
                     return user.gamesOwned;
                 } else {
+                    console.log("perhaps here")
                     user.gamesOwned = userGameData;
                     user.gamesOwnedCount = userGameData.length;
                     await setDbInfo(emailAddress, user);

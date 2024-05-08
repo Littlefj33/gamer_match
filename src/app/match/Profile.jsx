@@ -2,9 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { addFriend, getFriendStatus } from "./actions";
+import { addFriend, getFriendStatus, imageModify } from "./actions";
 
 export default function Profile({ userData }) {
+    console.log(userData)
     const { currentUser } = useContext(AuthContext);
     const [friendStatus, setFriendStatus] = useState("");
 
@@ -41,6 +42,32 @@ export default function Profile({ userData }) {
         }
         getStatus();
     }, []);
+
+    // useEffect(() => {
+    //     async function fetchData() {
+    //         try {
+    //             console.log("hi")
+    //             const result = await getUser(params.username);
+    //             console.log(params.username)
+    //             //console.log(JSON.parse(result))
+    //             const steamData = await getSteamInfo(JSON.parse(result).steamId)
+    //             console.log(JSON.parse(steamData))
+    //             let profileUrl = JSON.parse(steamData).avatarfull;
+    //             console.log(profileUrl);
+    //             console.log(params.username)
+    //             const modifiedProfile = await imageModify(profileUrl)
+    //             setUserData(JSON.parse(result));
+    //             setProfileData(modifiedProfile)
+    //             setOldProfileData(profileUrl)
+    //             setLoading(false); 
+    //             setUserData(JSON.parse(result));
+    //             setLoading(false);
+    //         } catch (e) {
+    //             console.log(e);
+    //         }
+    //     }
+    //     fetchData();
+    // }, []);
 
     return (
         <div className="w-44 h-44 flex flex-col px-4 py-3 rounded-3xl bg-gradient-to-b from-tangerine to-bittersweet text-black">
