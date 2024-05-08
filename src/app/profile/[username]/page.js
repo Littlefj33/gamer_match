@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useParams } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 import { getUser, getSteamInfo, imageModify } from "./actions";
@@ -7,6 +7,7 @@ import Link from "next/link";
 
 export default function Profile({params}) {
     const { currentUser } = useContext(AuthContext);
+    const { username } = useParams();
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState({});
     const [profileData, setProfileData] = useState({});
@@ -95,9 +96,9 @@ export default function Profile({params}) {
         redirect("/auth/login");
     }
 
-    //  if (currentUser) {
-    //      redirect("/profile");
-    // }
+    if (currentUser.displayName === username) {
+        redirect("/profile");
+    }
 
     if (loading) {
         return (
