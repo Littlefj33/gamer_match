@@ -26,25 +26,9 @@ export default function Profile() {
     const [IdError, setIdError] = useState({});
     const [serverError, setServerError] = useState({});
 
-    const [friendListPage, setFriendListPage] = useState(1);
-    const friendsPerPage = 10;
-    const totalFriendPages = Math.ceil(userData.friendCount / friendsPerPage);
-    const startFriendPage = (friendListPage - 1) * friendsPerPage;
-
-    const [recentlyPlayedListPage, setRecentlyPlayedPage] = useState(1);
-    const recentlyPlayedPage = 10;
-    const totalRecentPlayedPages = Math.ceil(
-        userData.recentlyPlayedCount / recentlyPlayedPage
-    );
-    const startRecentPlayedPage =
-        (recentlyPlayedListPage - 1) * recentlyPlayedPage;
-
-    const [recentlyOwnedListPage, setOwnedListPage] = useState(1);
-    const recentlyOwnedPage = 10;
-    const totalOwnedPages = Math.ceil(
-        userData.gamesOwnedCount / recentlyOwnedPage
-    );
-    const startOwnedPage = (recentlyOwnedListPage - 1) * recentlyOwnedPage;
+    const [curFriendPage, setFriendPage] = useState(0);
+    const [curRecentPlayPage, setRecentPlayPage] = useState(0);
+    const [curOwnedPage, setCurOwnedPage] = useState(0);
 
     /* Button functions */
     const handleSignOut = async () => {
@@ -115,36 +99,41 @@ export default function Profile() {
     };
 
     /* Paging functions */
-    const nextFriendPage = () => {
-        if (friendListPage < totalFriendPages) {
-            setFriendListPage(friendListPage + 1);
+    const handlePrevFriendPage = () => {
+        if (curFriendPage > 0) {
+            setFriendPage(curFriendPage + 1);
         }
     };
-    const prevFriendPage = () => {
-        if (friendListPage > 1) {
-            setFriendListPage(friendListPage - 1);
-        }
-    };
-
-    const nextRecentlyPlayedPage = () => {
-        if (recentlyPlayedListPage < totalRecentPlayedPages) {
-            setRecentlyPlayedPage(recentlyPlayedListPage + 1);
-        }
-    };
-    const prevRecentlyPlayedPage = () => {
-        if (recentlyPlayedListPage > 1) {
-            setRecentlyPlayedPage(recentlyPlayedListPage - 1);
+    const handleNextFriendPage = () => {
+        if (curFriendPage < Math.ceil(userData.friendList.length / 10) - 1) {
+            setFriendPage(curFriendPage - 1);
         }
     };
 
-    const nextOwnedPage = () => {
-        if (recentlyOwnedListPage < totalOwnedPages) {
-            setOwnedListPage(recentlyOwnedListPage + 1);
+    const handlePrevRecentPlayedPage = () => {
+        if (curRecentPlayPage > 0) {
+            setRecentPlayPage(curRecentPlayPage - 1);
         }
     };
-    const prevOwnedPage = () => {
-        if (recentlyOwnedListPage > 1) {
-            setOwnedListPage(recentlyOwnedListPage - 1);
+
+    const handleNextRecentPlayedPage = () => {
+        if (
+            curRecentPlayPage <
+            Math.ceil(userData.recentlyPlayed.length / 10) - 1
+        ) {
+            setRecentPlayPage(curRecentPlayPage + 1);
+        }
+    };
+
+    const handlePrevOwnedPage = () => {
+        if (curOwnedPage > 0) {
+            setCurOwnedPage(curOwnedPage - 1);
+        }
+    };
+
+    const handleNextOwnedPage = () => {
+        if (curOwnedPage < Math.ceil(userData.gamesOwned.length / 10) - 1) {
+            setCurOwnedPage(curOwnedPage + 1);
         }
     };
 
@@ -259,7 +248,7 @@ export default function Profile() {
                                                 Steam Account:
                                             </p>
                                             <Link
-                                                className=""
+                                                className="inline text-blue-700 hover:underline hover:font-bold"
                                                 href={userData.steamProfileLink}
                                             >
                                                 {userData.steamAccountUsername}
@@ -279,20 +268,19 @@ export default function Profile() {
                                         <h3 className="underline font-bold text-lg">
                                             Top 5 Games
                                         </h3>
-                                        <ul>
-                                            {userData.top5MostPlayed.map(
-                                                (game, i) => {
-                                                    return (
-                                                        <li key={i}>
-                                                            <p>
-                                                                Title:{" "}
-                                                                {game.title}
-                                                            </p>
-                                                        </li>
-                                                    );
-                                                }
-                                            )}
-                                        </ul>
+                                        <div className="ml-3 text-left">
+                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                                {userData.top5MostPlayed.map(
+                                                    (game, i) => {
+                                                        return (
+                                                            <li key={i}>
+                                                                {game.name}
+                                                            </li>
+                                                        );
+                                                    }
+                                                )}
+                                            </ul>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div>
@@ -313,57 +301,78 @@ export default function Profile() {
                                     <div>
                                         <h3 className="underline font-bold text-lg">
                                             Recently Played:{" "}
-                                            {userData.recentlyPlayedCount
-                                                ? `*${userData.recentlyPlayedCount}`
-                                                : "0"}
+                                            {userData.recentlyPlayed.length}
                                         </h3>
-                                        <ul>
-                                            {userData.recentlyPlayed
-                                                .slice(
-                                                    startRecentPlayedPage,
-                                                    startRecentPlayedPage +
-                                                        recentlyPlayedPage
-                                                )
-                                                .map((recentGame, i) => {
-                                                    return (
-                                                        <li key={i}>
-                                                            <p>
-                                                                Title:{" "}
-                                                                {
-                                                                    recentGame.title
-                                                                }
-                                                            </p>
-                                                        </li>
-                                                    );
-                                                })}
-                                        </ul>
+                                        <div className="ml-3 text-left">
+                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                                {userData.recentlyPlayed &&
+                                                    userData.recentlyPlayed
+                                                        .slice(
+                                                            curRecentPlayPage *
+                                                                10,
+                                                            (curRecentPlayPage +
+                                                                1) *
+                                                                10
+                                                        )
+                                                        .map(
+                                                            (recentGame, i) => {
+                                                                return (
+                                                                    <li key={i}>
+                                                                        {
+                                                                            recentGame.name
+                                                                        }
+                                                                    </li>
+                                                                );
+                                                            }
+                                                        )}
+                                            </ul>
+                                        </div>
                                         <div>
-                                            <button
-                                                onClick={prevRecentlyPlayedPage}
-                                                disabled={
-                                                    recentlyPlayedListPage < 1
-                                                }
-                                            >
-                                                Previous
-                                            </button>
-                                            <button
-                                                onClick={nextRecentlyPlayedPage}
-                                                disabled={
-                                                    recentlyPlayedListPage >=
-                                                    totalRecentPlayedPages
-                                                }
-                                            >
-                                                Next
-                                            </button>
+                                            {curRecentPlayPage === 0 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 mr-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={
+                                                        handlePrevRecentPlayedPage
+                                                    }
+                                                >
+                                                    Prev
+                                                </button>
+                                            )}
+                                            {curRecentPlayPage >=
+                                            Math.ceil(
+                                                userData.recentlyPlayed.length /
+                                                    10
+                                            ) -
+                                                1 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 ml-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={
+                                                        handleNextRecentPlayedPage
+                                                    }
+                                                >
+                                                    Next
+                                                </button>
+                                            )}
+                                            <h3>
+                                                Page {curRecentPlayPage + 1}/
+                                                {Math.ceil(
+                                                    userData.recentlyPlayed
+                                                        .length /
+                                                        10 -
+                                                        1
+                                                ) + 1}
+                                            </h3>
                                         </div>
                                     </div>
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
                                             Recently Played Games:{" "}
-                                            {userData.recentlyPlayedCount
-                                                ? `*${userData.recentlyPlayedCount}`
-                                                : "0"}
+                                            {userData.recentlyPlayed.length}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
@@ -378,57 +387,72 @@ export default function Profile() {
                                     <div>
                                         <h3 className="underline font-bold text-lg">
                                             Owned Games:{" "}
-                                            {userData.gamesOwnedCount
-                                                ? `*${userData.gamesOwnedCount}`
-                                                : "0"}
+                                            {userData.gamesOwned.length}
                                         </h3>
-                                        <ul>
-                                            {userData.gamesOwned
-                                                .slice(
-                                                    startOwnedPage,
-                                                    startOwnedPage +
-                                                        recentlyOwnedPage
-                                                )
-                                                .map((ownedGame, i) => {
-                                                    return (
-                                                        <li key={i}>
-                                                            <p>
-                                                                Title:{" "}
-                                                                {
-                                                                    ownedGame.title
-                                                                }
-                                                            </p>
-                                                        </li>
-                                                    );
-                                                })}
-                                        </ul>
+                                        <div className="ml-3 text-left">
+                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                                {userData.gamesOwned &&
+                                                    userData.gamesOwned
+                                                        .slice(
+                                                            curOwnedPage * 10,
+                                                            (curOwnedPage + 1) *
+                                                                10
+                                                        )
+                                                        .map((ownedGame, i) => {
+                                                            return (
+                                                                <li key={i}>
+                                                                    {
+                                                                        ownedGame.name
+                                                                    }
+                                                                </li>
+                                                            );
+                                                        })}
+                                            </ul>
+                                        </div>
                                         <div>
-                                            <button
-                                                onClick={prevOwnedPage}
-                                                disabled={
-                                                    recentlyOwnedListPage < 1
-                                                }
-                                            >
-                                                Previous
-                                            </button>
-                                            <button
-                                                onClick={nextOwnedPage}
-                                                disabled={
-                                                    recentlyOwnedListPage >=
-                                                    totalOwnedPages
-                                                }
-                                            >
-                                                Next
-                                            </button>
+                                            {curOwnedPage === 0 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 mr-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={
+                                                        handlePrevOwnedPage
+                                                    }
+                                                >
+                                                    Prev
+                                                </button>
+                                            )}
+                                            {curOwnedPage >=
+                                            Math.ceil(
+                                                userData.gamesOwned.length / 10
+                                            ) -
+                                                1 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 ml-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={
+                                                        handleNextOwnedPage
+                                                    }
+                                                >
+                                                    Next
+                                                </button>
+                                            )}
+                                            <h3>
+                                                Page {curOwnedPage + 1}/
+                                                {Math.ceil(
+                                                    userData.gamesOwned.length /
+                                                        10 -
+                                                        1
+                                                ) + 1}
+                                            </h3>
                                         </div>
                                     </div>
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
                                             Owned Games:{" "}
-                                            {userData.gamesOwnedCount
-                                                ? `*${userData.gamesOwnedCount}`
-                                                : "0"}
+                                            {userData.gamesOwned.length}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
@@ -444,43 +468,69 @@ export default function Profile() {
                                         <h3 className="underline font-bold text-lg">
                                             Friends List: {userData.friendCount}
                                         </h3>
-                                        <ul>
-                                            {userData.friendList
-                                                .slice(
-                                                    startFriendPage,
-                                                    startFriendPage +
-                                                        friendsPerPage
-                                                )
-                                                .map((friend, i) => {
-                                                    return (
-                                                        <li key={i}>
-                                                            <Link
-                                                                href={`/profile/${friend.username}`}
-                                                            >
-                                                                {
-                                                                    friend.username
-                                                                }
-                                                            </Link>
-                                                        </li>
-                                                    );
-                                                })}
-                                        </ul>
+                                        <div className="ml-3 text-left">
+                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                                {userData.friendList &&
+                                                    userData.friendList
+                                                        .slice(
+                                                            curFriendPage * 10,
+                                                            (curFriendPage +
+                                                                1) *
+                                                                10
+                                                        )
+                                                        .map((friend, i) => {
+                                                            return (
+                                                                <li key={i}>
+                                                                    <Link
+                                                                        className="inline text-blue-700 hover:underline hover:font-bold"
+                                                                        href={`/profile/${friend.username}`}
+                                                                    >
+                                                                        {
+                                                                            friend.username
+                                                                        }
+                                                                    </Link>
+                                                                </li>
+                                                            );
+                                                        })}
+                                            </ul>
+                                        </div>
                                         <div>
-                                            <button
-                                                onClick={prevFriendPage}
-                                                disabled={friendListPage < 1}
-                                            >
-                                                Previous
-                                            </button>
-                                            <button
-                                                onClick={nextFriendPage}
-                                                disabled={
-                                                    friendListPage >=
-                                                    totalFriendPages
-                                                }
-                                            >
-                                                Next
-                                            </button>
+                                            {curFriendPage === 0 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 mr-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={
+                                                        handlePrevFriendPage
+                                                    }
+                                                >
+                                                    Prev
+                                                </button>
+                                            )}
+                                            {curFriendPage >=
+                                            Math.ceil(
+                                                userData.friendList.length / 10
+                                            ) -
+                                                1 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 ml-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={
+                                                        handleNextFriendPage
+                                                    }
+                                                >
+                                                    Next
+                                                </button>
+                                            )}
+                                            <h3>
+                                                Page {curFriendPage + 1}/
+                                                {Math.ceil(
+                                                    userData.friendList.length /
+                                                        10 -
+                                                        1
+                                                ) + 1}
+                                            </h3>
                                         </div>
                                     </div>
                                 ) : (
