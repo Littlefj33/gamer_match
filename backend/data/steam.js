@@ -114,7 +114,7 @@ export const getSteamUsersGames = async (emailAddress) => {
                     return user.gamesOwned;
                 } else {
                     user.gamesOwned = userGameData;
-                    user.gamesOwnedCount = userGameData.length
+                    user.gamesOwnedCount = userGameData.length;
                     await setDbInfo(emailAddress, user);
                     await client.set(
                         "Games Owned: " + steamId,
@@ -145,9 +145,8 @@ export const getRecentlyPlayed = async (emailAddress) => {
             const userGameData = await client.get(
                 "Recently Played: " + steamId
             );
-            user.recentlyPlayed = JSON.parse(userGameData);
-            await setDbInfo(emailAddress, user);
-            return JSON.parse(userGameData);
+            const jsonRes = JSON.parse(userGameData);
+            return jsonRes;
         }
         const response = await axios.get(
             `http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key=${API_KEY}&steamid=${steamId}&format=json`
@@ -173,7 +172,8 @@ export const getRecentlyPlayed = async (emailAddress) => {
                     return user.recentlyPlayed;
                 } else {
                     user.recentlyPlayed = userRecentlyPlayedGameData;
-                    user.recentlyPlayedCount = userRecentlyPlayedGameData.length
+                    user.recentlyPlayedCount =
+                        userRecentlyPlayedGameData.length;
                     await setDbInfo(emailAddress, user);
                     await client.set(
                         "Recently Played: " + steamId,
@@ -200,8 +200,6 @@ export const getTopFiveGames = async (emailAddress) => {
     const cacheExists = await client.exists("Most played: " + steamId);
     if (cacheExists) {
         const userGameData = await client.get("Most played: " + steamId);
-        user.top5MostPlayed = JSON.parse(userGameData);
-        await setDbInfo(emailAddress, user);
         return JSON.parse(userGameData);
     }
     if (user.gamesOwned.length > 0) {
@@ -251,7 +249,7 @@ export const getTopFiveGames = async (emailAddress) => {
             return userGames.slice(0, 5);
         }
     } else {
-        return;
+        return [];
     }
 };
 
@@ -669,37 +667,5 @@ export const getGameShema = async (gameId) => {
         }
     } catch (e) {
         throw new ResourcesError("Cannot get game schema");
-    }
-};
-
-export const deleteUserData = async (emailAddress) => {
-    emailAddress = validation.emailValidation(emailAddress);
-
-    try {
-        const dbInfo = await handleErrorChecking(emailAddress);
-        const usersCollection = dbInfo.usersCollection;
-        const user = dbInfo.user;
-
-        user.top5MostPlayed = [];
-        user.gamesOwned = [];
-        user.recentlyPlayed = [];
-
-        // Remove gamesOwned, top5MostPlayed, and recentlyPlayed data from the redis cache
-        const client = createClient();
-        await client.connect();
-        await client.del("Most played: " + user.steamId);
-        await client.del("Recently Played: " + user.steamId);
-        await client.del("Games Owned: " + user.steamId);
-        await client.quit();
-
-        await usersCollection.updateOne(
-            { emailAddress: emailAddress },
-            { $set: user },
-            { returnDocument: "after" }
-        );
-
-        return { success: true };
-    } catch (e) {
-        return { error: e.message, success: false };
     }
 };

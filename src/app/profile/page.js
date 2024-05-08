@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 import { doSignOut } from "@/utils/firebase/FirebaseFunctions.js";
-import { getUser } from "./actions";
+import { getUser, seedDatabase } from "./actions";
 import Link from "next/link";
 
 export default function Profile() {
@@ -34,6 +34,14 @@ export default function Profile() {
     const handleSignOut = async () => {
         try {
             await doSignOut();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleSeedDB = async () => {
+        try {
+            await seedDatabase();
         } catch (error) {
             console.error(error);
         }
@@ -391,6 +399,15 @@ export default function Profile() {
                         onClick={handleSignOut}
                     >
                         Sign Out
+                    </button>
+                </div>
+
+                <div className="text-center">
+                    <button
+                        className="mt-4 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                        onClick={handleSeedDB}
+                    >
+                        Seed Database
                     </button>
                 </div>
             </div>

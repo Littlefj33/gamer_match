@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useParams } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 import { getUser } from "./actions";
@@ -7,6 +7,7 @@ import Link from "next/link";
 
 export default function Profile() {
     const { currentUser } = useContext(AuthContext);
+    const { username } = useParams();
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState({});
 
@@ -33,7 +34,7 @@ export default function Profile() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const result = await getUser(currentUser.displayName);
+                const result = await getUser(username.displayName);
                 console.log(JSON.parse(result));
                 setUserData(JSON.parse(result));
                 setLoading(false);
@@ -81,7 +82,7 @@ export default function Profile() {
         redirect("/auth/login");
     }
 
-    if (currentUser) {
+    if (currentUser.displayName === username) {
         redirect("/profile");
     }
 
