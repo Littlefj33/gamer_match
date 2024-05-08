@@ -27,7 +27,7 @@ export default async function MyFriends() {
                     {friendUsernames.map((name, index) => (
                         <li key={index}>
                             <Link href={`/profile/${friendUsernames[index]}`} passHref>
-                            <a>{name}</a>
+                            {name}
                             </Link>
                         </li>
                     ))}

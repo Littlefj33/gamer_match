@@ -39,11 +39,14 @@ export const getSteamUser = async (steamId) => {
         steamId = await convertVanityUrl(steamId)
     }
     try {
-        const cacheExists = await client.exists("User Data: " + steamId);
-        if (cacheExists) {
-            const userGameData = await client.get("User Data: " + steamId);
-            return JSON.parse(userGameData);
-        }
+        console.log("hi")
+        // const cacheExists = await client.exists("User Data: " + steamId);
+        // console.log("I see")
+        // if (cacheExists) {
+        //     console.log("cacheExists")
+        //     const userGameData = await client.get("User Data: " + steamId);
+        //     return JSON.parse(userGameData);
+        // }
         const response = await axios.get(
             `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_KEY}&steamids=${steamId}`
         );
@@ -55,15 +58,16 @@ export const getSteamUser = async (steamId) => {
                 );
             } else {
                 const playerData = data.response.players[0];
-                await client.set(
-                    "User Data: " + steamId,
-                    JSON.stringify(playerData)
-                );
-                await client.expire("User Data: " + steamId, 1800); //set expire time to half hour in case user changes profile data
+                // await client.set(
+                //     "User Data: " + steamId,
+                //     JSON.stringify(playerData)
+                // );
+                // await client.expire("User Data: " + steamId, 1800); //set expire time to half hour in case user changes profile data
                 return playerData;
             }
         }
     } catch (e) {
+        console.log(e)
         throw new ResourcesError("Steam account does not exist");
     }
 };
