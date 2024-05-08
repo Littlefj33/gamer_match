@@ -2,30 +2,44 @@ import Image from "next/image";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { addFriend } from "./actions";
+import { addFriend, getFriendStatus } from "./actions";
 
 export default function Profile({ userData }) {
     const { currentUser } = useContext(AuthContext);
     const [friendStatus, setFriendStatus] = useState("");
 
     const handleAddFriend = async () => {
-        setFriendStatus("requestSent");
-        await addFriend(currentUser.email, userData.username);
-        let success;
-        if (success) {
-            setFriendStatus("friend");
+        let result = await addFriend({
+            senderName: currentUser.displayName,
+            recipientName: userData.username,
+        });
+        result = JSON.parse(result);
+        if (result.success) {
+            setFriendStatus("requestSent");
         } else {
             setFriendStatus("notFriend");
         }
     };
 
-    /* TODO
-        - Actual backend call to get friend status (remove hardcoded values)
-    */
-
     useEffect(() => {
-        /* Hardcoded value */
-        setFriendStatus("friend"); // Object {isFriend: boolean, requestSent: boolean}
+        async function getStatus() {
+            let status = await getFriendStatus({
+                username: currentUser.displayName,
+                otherUsername: userData.username,
+            });
+            status = JSON.parse(status);
+
+            if (status.isFriend) {
+                setFriendStatus("friend");
+            } else {
+                if (status.requestSent) {
+                    setFriendStatus("requestSent");
+                } else {
+                    setFriendStatus("notFriend");
+                }
+            }
+        }
+        getStatus();
     }, []);
 
     return (
@@ -93,9 +107,7 @@ export default function Profile({ userData }) {
             <div className="flex justify-end mt-2">
                 {friendStatus === "notFriend" ? (
                     <button
-                        onClick={() => {
-                            handleAddFriend;
-                        }}
+                        onClick={handleAddFriend}
                         className="text-black font-medium"
                     >
                         + Add Friend

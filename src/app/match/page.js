@@ -10,7 +10,6 @@ import {
 } from "./actions";
 import Profile from "./Profile";
 import { redirect } from "next/navigation";
-import Image from "next/image";
 
 export default function Match() {
     const { currentUser } = useContext(AuthContext);
@@ -104,6 +103,10 @@ export default function Match() {
         }
     };
 
+    useEffect(() => {
+        console.log("matchResults", matchResults);
+    }, [matchResults]);
+
     /* Generate random matches on page load */
     useEffect(() => {
         async function autoGenerate() {
@@ -158,7 +161,7 @@ export default function Match() {
                                         <input
                                             type="text"
                                             name="gameName"
-                                            placeholder="e.g. Minecraft"
+                                            placeholder="e.g. Among Us"
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
                                     </label>
@@ -194,7 +197,7 @@ export default function Match() {
                                         <input
                                             type="text"
                                             name="gameName"
-                                            placeholder="e.g. Counter-Strike"
+                                            placeholder="e.g. Doom"
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
                                     </label>
@@ -213,9 +216,7 @@ export default function Match() {
 
                     <div className="w-40 h-full flex flex-wrap items-center justify-center mx-10">
                         <button
-                            onClick={() => {
-                                handleMatchLibrary;
-                            }}
+                            onClick={handleMatchLibrary}
                             className="w-full h-12 flex items-center justify-center bg-persian-blue rounded-full text-xl "
                         >
                             Shared Games
@@ -256,7 +257,8 @@ export default function Match() {
                                                 : "Shared Library of Games"}
                                         </div>
                                     </div>
-                                    {result.matchedUsers.length > 0 ? (
+                                    {result.matchedUsers &&
+                                    result.matchedUsers.length > 0 ? (
                                         <div>
                                             <div className="snap-x flex justify-start mx-10 overflow-x-scroll scrollbar">
                                                 {result.matchedUsers.map(
