@@ -258,7 +258,7 @@ export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     emailAddress = validation.emailValidation(emailAddress);
     const client = createClient();
     await client.connect();
-    const cacheExists = await client.exists(gameToFind);
+    const cacheExists = await client.exists(emailAddress, + ": " + gameToFind);
     if (cacheExists) {
         const gameFound = await client.get(gameToFind);
         return JSON.parse(gameFound);
@@ -280,7 +280,7 @@ export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     if (!gameFound) {
         throw new ResourcesError(`You do not own ${gameToFind}`);
     } else {
-        await client.set(gameToFind, JSON.stringify(gameFound));
+        await client.set(emailAddress, + ": " + gameToFind, JSON.stringify(gameFound));
         return gameFound;
     }
 };
@@ -414,6 +414,7 @@ export const findTopMatchesOnLibrary = async (emailAddress) => {
     const userFriends = user.friendList;
     let matchedUsers = [];
     for (const otherUser of allUsers) {
+        if(!user.steamProfileLink || user.steamProfileLink === ""){continue}
         if (user.emailAddress !== otherUser.emailAddress) {
             const result = userFriends.find(
                 (item) => item.username === otherUser.username
@@ -453,6 +454,7 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
     const userAchievementStates = await getAchievedStates(userAchievements);
     const matchedUsers = [];
     for (const otherUser of allUsersWithGame) {
+        if(!user.steamProfileLink || user.steamProfileLink === ""){continue}
         if (user.emailAddress !== otherUser.emailAddress) {
             const result = userFriends.find(
                 (item) => item.username === otherUser.username
@@ -527,6 +529,7 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
     const userFriends = user.friendList;
     const matchedUsers = [];
     for (const otherUser of usersWithGame) {
+        if(!user.steamProfileLink || user.steamProfileLink === ""){continue}
         if (otherUser.emailAddress !== user.emailAddress) {
             const result = userFriends.find(
                 (item) => item.username === otherUser.username
@@ -667,5 +670,40 @@ export const getGameShema = async (gameId) => {
         }
     } catch (e) {
         throw new ResourcesError("Cannot get game schema");
+    }
+};
+
+
+export const deleteUserData = async (emailAddress) => {
+    emailAddress = validation.emailValidation(emailAddress);
+
+    try {
+        const dbInfo = await handleErrorChecking(emailAddress);
+        const usersCollection = dbInfo.usersCollection;
+        const user = dbInfo.user;
+
+        user.top5MostPlayed = [];
+        user.gamesOwned = [];
+        user.recentlyPlayed = [];
+        user.gamesOwnedCount = 0;
+        user.recentlyPlayedCount = 0;
+
+        // Remove gamesOwned, top5MostPlayed, and recentlyPlayed data from the redis cache
+        const client = createClient();
+        await client.connect();
+        await client.del("Most played: " + user.steamId);
+        await client.del("Recently Played: " + user.steamId);
+        await client.del("Games Owned: " + user.steamId);
+        await client.quit();
+
+        await usersCollection.updateOne(
+            { emailAddress: emailAddress },
+            { $set: user },
+            { returnDocument: "after" }
+        );
+
+        return { success: true };
+    } catch (e) {
+        return { error: e.message, success: false };
     }
 };
