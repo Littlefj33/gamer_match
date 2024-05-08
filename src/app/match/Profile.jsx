@@ -5,7 +5,6 @@ import { AuthContext } from "@/context/AuthContext";
 import { addFriend, getFriendStatus, imageModify } from "./actions";
 
 export default function Profile({ userData }) {
-    console.log(userData)
     const { currentUser } = useContext(AuthContext);
     const [friendStatus, setFriendStatus] = useState("");
 

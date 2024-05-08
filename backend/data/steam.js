@@ -96,9 +96,9 @@ export const getSteamUsersGames = async (emailAddress) => {
         );
         if (response.status === 200) {
             const data = response.data;
-            console.log("got here")
+           // console.log("got here")
             if (data.response.games.length === 0) {
-                console.log("not that one")
+                //console.log("not that one")
                 throw new ResourcesError(
                     "Steam account does not have any games!"
                 );
@@ -116,7 +116,7 @@ export const getSteamUsersGames = async (emailAddress) => {
                     await client.expire("Games Owned: " + steamId, 1800); //set half hour expire time in case a user buys new games
                     return user.gamesOwned;
                 } else {
-                    console.log("perhaps here")
+                  //  console.log("perhaps here")
                     user.gamesOwned = userGameData;
                     user.gamesOwnedCount = userGameData.length;
                     await setDbInfo(emailAddress, user);
@@ -233,9 +233,8 @@ export const getTopFiveGames = async (emailAddress) => {
             }
         }
         const top5 = userGames.slice(0, 5);
-        if (JSON.stringify(user.top5MostPlayed) === top5) {
-            const user = getDbInfo(emailAddress);
-            await getDbInfo(emailAddress);
+        if (JSON.stringify(user.top5MostPlayed) === JSON.stringify(top5)) {
+            const user = await getDbInfo(emailAddress);
             await client.set(
                 "Most played: " + steamId,
                 JSON.stringify(user.top5MostPlayed)
@@ -260,16 +259,17 @@ export const getTopFiveGames = async (emailAddress) => {
 //Function that gets a game from a users library
 export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     emailAddress = validation.emailValidation(emailAddress);
-    const client = createClient();
-    await client.connect();
-    const cacheExists = await client.exists(gameToFind);
-    if (cacheExists) {
-        const gameFound = await client.get(gameToFind);
-        return JSON.parse(gameFound);
-    }
     gameToFind = validation.stringCheck(gameToFind);
     const dbInfo = await handleErrorChecking(emailAddress);
     const user = dbInfo.user;
+    const client = createClient();
+    await client.connect();
+    const cacheExists = await client.exists(user.steamId + ": " + gameToFind);
+    if (cacheExists) {
+        const gameFound = await client.get(user.steamId + ": " + gameToFind);
+        return JSON.parse(gameFound);
+    }
+    
 
     const userGames = user.gamesOwned;
     let gameFound;
@@ -284,7 +284,7 @@ export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     if (!gameFound) {
         throw new ResourcesError(`You do not own ${gameToFind}`);
     } else {
-        await client.set(gameToFind, JSON.stringify(gameFound));
+        await client.set(user.steamId + ": " + gameToFind, JSON.stringify(gameFound));
         return gameFound;
     }
 };

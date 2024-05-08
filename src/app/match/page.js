@@ -58,6 +58,7 @@ export default function Match() {
 
             result = JSON.parse(result);
             setMatchResults([result, ...matchResults]);
+            console.log("The match resulsts are:", result);
             setLoading(false);
         } catch (e) {
             console.log("ERROR", e);
@@ -312,6 +313,7 @@ export default function Match() {
                                                                 <Profile
                                                                     userData={
                                                                         user
+
                                                                     }
                                                                 />
                                                             </div>
