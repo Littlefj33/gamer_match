@@ -13,7 +13,7 @@ export default function Layout({ children }) {
     return (
         <>
             <Header />
-            <div className="w-full h-screen bg-platinum text-black">
+            <div className="w-full min-h-screen bg-platinum text-black">
                 {children}
             </div>
         </>
