@@ -165,10 +165,12 @@ export async function updateSentPendingRequests(
 
     const insertPending = {
         pendingRequests: pendingRequests,
+        pendingCount: pendingRequests.length
     };
   
   const insertSent = {
         sentRequests: sentRequests,
+        sentCount: sentRequests.length
     };
 
 

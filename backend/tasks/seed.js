@@ -1,6 +1,6 @@
 import { registerUser, linkSteamAccount } from "../data/users.js";
 import { closeConnection, dbConnection } from '../config/mongoConnection.js';
-import {createClient} from 'redis'
+
 import {
     getSteamUser,
     getSteamUsersGames,
@@ -13,10 +13,6 @@ import {
     sendFriendRequest,
     acceptFriendRequest
 } from "../data/friends.js";
-
-const client = await createClient()
-    .on("error", (err) => console.log("redis client error", err))
-    .connect();
 
 
 const main = async () => {
