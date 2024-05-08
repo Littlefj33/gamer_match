@@ -12,6 +12,7 @@ import {
 import { stringCheck } from "@/utils/helpers";
 import Profile from "./Profile";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default function Match() {
     const { currentUser } = useContext(AuthContext);
@@ -134,6 +135,10 @@ export default function Match() {
 
     /* Generate random matches on page load */
     useEffect(() => {
+        linkStatus();
+    }, []);
+
+    useEffect(() => {
         async function autoGenerate() {
             let autoResults = await generateAutoMatches({
                 userEmail: currentUser.email,
@@ -142,10 +147,10 @@ export default function Match() {
             setMatchResults(autoResults);
         }
         linkStatus();
-        if (linkedStatus) {
+        if (linkedStatus){
             autoGenerate();
         }
-    }, []);
+    }, [linkedStatus]);
 
     const linkStatus = async () => {
         try {
@@ -160,11 +165,6 @@ export default function Match() {
         }
     };
 
-    /* TODO:
-        - matchType for Achievements: [iAchieved, theyAchieved, neitherAchieved]
-        - Edit backend for achievements to only return matchType results in user objects
-    */
-
     if (!currentUser) {
         redirect("/auth/login");
     }
@@ -177,7 +177,9 @@ export default function Match() {
                         You must link your Steam account to use this feature
                     </div>
                     <div className="text-lg">
-                        <a href="/profile">Click here to link your account</a>
+                        <Link href="/profile">
+                            Click here to link your account within Profile page
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -205,12 +207,20 @@ export default function Match() {
                                 <div className="flex flex-col justify-center items-center text-center my-1">
                                     <label className="mb-4 font-semibold">
                                         Match Type:
-                                        <input
-                                            type="text"
+                                        <select
                                             name="matchType"
-                                            placeholder="e.g. I achieved"
-                                            className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
-                                        />
+                                            className="w-full bg-transparent shadow-md border-b border-t border-black"
+                                        >
+                                            <option value="iAchieved">
+                                                I achieved
+                                            </option>
+                                            <option value="theyAchieved">
+                                                They achieved
+                                            </option>
+                                            <option value="neitherAchieved">
+                                                Neither achieved
+                                            </option>
+                                        </select>
                                     </label>
                                     {Object.keys(matchTypeError).length !==
                                     0 ? (

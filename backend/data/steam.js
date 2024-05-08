@@ -260,7 +260,7 @@ export const getUserOwnedGame = async (emailAddress, gameToFind) => {
     await client.connect();
     const cacheExists = await client.exists(emailAddress, + ": " + gameToFind);
     if (cacheExists) {
-        const gameFound = await client.get(gameToFind);
+        const gameFound = await client.get(emailAddress, + ": " + gameToFind);
         return JSON.parse(gameFound);
     }
     gameToFind = validation.stringCheck(gameToFind);
