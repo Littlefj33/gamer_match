@@ -1,12 +1,15 @@
 /* actions to communicate to backend to get user info */
 "use server";
 
+import { getUserByUsername } from "../../../backend/helpers";
+import { getSteamUser } from "../../../backend/data/steam";
 import { userData, steamData } from "../../../backend/data";
 import {
     acceptFriendRequest,
     sendFriendRequest,
 } from "../../../backend/data/friends";
-import { getUserByUsername } from "../../../backend/helpers";
+import im from "imagemagick"
+import axios from 'axios'
 
 export async function getUser(username) {
     try {
@@ -15,6 +18,45 @@ export async function getUser(username) {
     } catch (e) {
         return JSON.stringify({ error: e.message, success: false });
     }
+}
+
+export async function getSteamInfo(id) {
+    try {
+        const result = await getSteamUser(id);
+        return JSON.stringify(result);
+    } catch (e) {
+        return JSON.stringify({ error: e.message, success: false });
+    }
+}
+
+export async function imageModify(imgUrl) {
+    return new Promise(async (resolve, reject) => {
+    console.log(imgUrl)
+    try {
+        const response = await axios.get(imgUrl, { responseType: 'arraybuffer'})
+       
+        const bufferedChunks = response.data
+            
+            const newImage = await new Promise((resolve, reject) => {
+                im.resize({
+                srcData: bufferedChunks,
+                width: 400, 
+                height: 400,
+                gravity: 'North'
+            }, (err, stdout, stderr) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(Buffer.from(stdout, 'binary'))
+                }
+            })});
+            
+            const base64Image = newImage.toString('base64')
+            resolve(`data:image/jpg;base64,${base64Image}`);
+        
+    } catch (error) {
+        reject(error);
+    }});
 }
 
 export async function linkSteamAccount(formData) {
@@ -47,6 +89,7 @@ export async function isAccountLinked(formData) {
 }
 
 export async function getSteamUsersGames(formData) {
+    console.log(formData)
     let { emailAddress } = formData;
     try {
         return await steamData.getSteamUsersGames(emailAddress);
@@ -111,7 +154,8 @@ export async function seedDatabase() {
     ];
 
     try {
-        seedUsers.map(async (user, i) => {
+        for (let i = 0; i < seedUsers.length; i++) {
+            const user = seedUsers[i];
             await userData.registerUser(
                 user.username,
                 user.email,
@@ -122,7 +166,22 @@ export async function seedDatabase() {
             await steamData.getRecentlyPlayed(user.email);
             await steamData.getTopFiveGames(user.email);
             console.log(`${i + 1}/${seedUsers.length} Users Seeded`);
-        });
+        }
+
+        await sendFriendRequest("twang", "Aero");
+        await sendFriendRequest("twang", "CausticLimes");
+        await sendFriendRequest("twang", "Shinks");
+        await sendFriendRequest("Aero", "CausticLimes");
+        await sendFriendRequest("Aero", "Shinks");
+        await sendFriendRequest("CausticLimes", "Shinks");
+
+        await acceptFriendRequest("Aero", "twang");
+        await acceptFriendRequest("CausticLimes", "twang");
+        await acceptFriendRequest("Shinks", "twang");
+        await acceptFriendRequest("CausticLimes", "Aero");
+        await acceptFriendRequest("Shinks", "Aero");
+        await acceptFriendRequest("Shinks", "CausticLimes");
+        
         console.log("Program has been seeded successfully!");
     } catch (e) {
         console.log("Seed ERROR", e);

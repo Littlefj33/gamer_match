@@ -1,8 +1,8 @@
 "use server";
 
 import {
-    getPendingRequests,
-    getSentRequests,
+    rejectFriendRequest,
+    acceptFriendRequest,
 } from "../../../backend/data/friends";
 import { getUserByUsername } from "../../../backend/helpers";
 
@@ -15,20 +15,30 @@ export async function getUser(username) {
     }
 }
 
-export async function getSent(username) {
+export async function rejectRequest({ recipientName, senderName }) {
     try {
-        const sent = await getSentRequests(username);
-        return JSON.stringify(sent);
+        let { reject } = await rejectFriendRequest(recipientName, senderName);
+        if (!reject) {
+            throw "ERROR: Reject friend request failed";
+        } else {
+            return JSON.stringify({ success: true });
+        }
     } catch (e) {
-        return JSON.stringify({ error: e.message, success: false });
+        console.log(e);
+        return "ERROR";
     }
 }
 
-export async function getPending(username) {
+export async function acceptRequest({ recipientName, senderName }) {
     try {
-        const pending = await getPendingRequests(username);
-        return JSON.stringify(pending);
+        let { accept } = await acceptFriendRequest(recipientName, senderName);
+        if (!accept) {
+            throw "ERROR: Accept friend request failed";
+        } else {
+            return JSON.stringify({ success: true });
+        }
     } catch (e) {
-        return JSON.stringify({ error: e.message, success: false });
+        console.log(e);
+        return "ERROR";
     }
 }

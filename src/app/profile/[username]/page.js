@@ -2,17 +2,21 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
-import { getUser } from "./actions";
+import { getUser, getSteamInfo, imageModify } from "./actions";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Profile({ params }) {
     const { currentUser } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState({});
+    const [profileData, setProfileData] = useState({});
+    const [oldProfileData, setOldProfileData] = useState({});
 
     const [curFriendPage, setFriendPage] = useState(0);
     const [curRecentPlayPage, setRecentPlayPage] = useState(0);
     const [curOwnedPage, setCurOwnedPage] = useState(0);
+    const [doRedirect, setDoRedirect] = useState(false);
 
     const username = params.username;
 
@@ -20,16 +24,42 @@ export default function Profile({ params }) {
         async function fetchData() {
             try {
                 console.log(username);
-                const result = await getUser(username);
-                console.log(JSON.parse(result));
+                let result = await getUser(username);
+                result = JSON.parse(result);
+                if (result.success === false) {
+                    setDoRedirect(true);
+                    throw "NOT A USER!";
+                }
+                console.log(result);
+                setUserData(result);
+                console.log("hi")
+                console.log(params.username)
+                //console.log(JSON.parse(result))
+                const steamData = await getSteamInfo(JSON.parse(result).steamId)
+                console.log(JSON.parse(steamData))
+                let profileUrl = JSON.parse(steamData).avatarfull;
+                console.log(profileUrl);
+                console.log(params.username)
+                const modifiedProfile = await imageModify(profileUrl)
+                setUserData(JSON.parse(result));
+                setProfileData(modifiedProfile)
+                setOldProfileData(profileUrl)
+                setLoading(false); 
                 setUserData(JSON.parse(result));
                 setLoading(false);
+                return true;
             } catch (e) {
-                console.log(e);
+                return false;
             }
         }
         fetchData();
     }, []);
+
+    useEffect(() => {
+        if (doRedirect) {
+            redirect("/not-found");
+        }
+    }, [doRedirect]);
 
     const handlePrevFriendPage = () => {
         if (curFriendPage > 0) {
@@ -88,9 +118,22 @@ export default function Profile({ params }) {
             <div>
                 {Object.keys(userData).length !== 0 ? (
                     <div>
-                        <h1 className="text-center text-3xl font-bold mb-6 text-persian-blue">
-                            Welcome to {userData.username}'s Page!
-                        </h1>
+                        <div className="flex items-center justify-center">
+                            <h1 className="text-center text-3xl font-bold mb-6 text-persian-blue">
+                                Welcome to {userData.username}'s Page!
+                            </h1>
+                            <div className="ml-4">
+                                <Image
+                                    src={profileData}
+                                    alt="Profile Icon"
+                                    width="50"
+                                    height="50"
+                                    style={{
+                                        objectFit: "fill",
+                                    }}
+                                />
+                            </div>
+                        </div>
                         <div className="flex justify-evenly text-center">
                             <div className="w-1/5">
                                 <h3 className="underline font-bold text-lg">

@@ -11,6 +11,9 @@ import {
     matchUsersOnPlaytimeByGame,
 } from "../../../backend/data/steam";
 import * as userData from "../../../backend/data/users";
+import im from "imagemagick"
+import axios from 'axios'
+import {createCanvas, loadImage} from 'canvas'
 
 /* TODO
     - Server-side validation
@@ -35,8 +38,7 @@ export async function achievementMatch({ userEmail, matchType, gameName }) {
 
         return JSON.stringify(result);
     } catch (e) {
-        console.log(e);
-        throw "ERROR";
+        return { error: e.message, success: false };
     }
 }
 
@@ -55,8 +57,7 @@ export async function playtimeMatch({ userEmail, gameName }) {
 
         return JSON.stringify(result);
     } catch (e) {
-        console.log(e);
-        throw "ERROR";
+        return { error: e.message, success: false };
     }
 }
 
@@ -71,8 +72,7 @@ export async function libraryMatch({ userEmail }) {
 
         return JSON.stringify(result);
     } catch (e) {
-        console.log(e);
-        throw "ERROR";
+        return { error: e.message, success: false };
     }
 }
 
@@ -159,4 +159,39 @@ export async function isAccountLinked(formData) {
     } catch (e) {
         return { error: e.message, success: false };
     }
+}
+
+export async function imageModify(imgUrl) {
+    return new Promise(async (resolve, reject) => {
+    console.log(imgUrl)
+    try {
+        const response = await axios.get(imgUrl, { responseType: 'arraybuffer'})
+       
+        const bufferedChunks = response.data
+        console.log(Buffer.from(bufferedChunks, 'binary'))
+
+        const newImageBuffer = await new Promise((resolve, reject) => {
+            im.resize({
+                srcData: bufferedChunks,
+                width: 400, 
+                height: 400,
+                gravity: 'Center'
+            }, (err, stdout, stderr) => {
+            if (err) {
+                console.log(stderr)
+                reject(err);
+            } else {
+                resolve(Buffer.from(stdout, 'binary'))
+            }
+            })
+        });
+        console.log(Buffer.from(newImageBuffer, 'binary'))
+       
+        const base64Image = newImageBuffer.toString('base64');
+
+        resolve(`data:image/jpg;base64,${base64Image}`);
+        
+    } catch (error) {
+        reject(error);
+    }});
 }

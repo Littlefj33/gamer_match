@@ -1,8 +1,9 @@
 /* actions to communicate to backend to get user info */
 "use server";
 
-import { getUserByUsername } from "../../../../backend/helpers";
+import { getUserByUsername } from "/backend/helpers";
 import { getSteamUser } from "/backend/data/steam";
+import { isAccountLinked } from "../../../backend/data/users";
 import im from "imagemagick"
 import axios from 'axios'
 import {createCanvas, loadImage} from 'canvas'
@@ -26,6 +27,15 @@ export async function getSteamInfo(id) {
     }
 }
 
+export async function isSteamAccountLinked(emailAddress) {
+  console.log(emailAddress)
+  try {
+      return await isAccountLinked(emailAddress);
+  } catch (e) {
+      return { error: e.message, success: false };
+  }
+}
+
 export async function imageModify(imgUrl) {
     return new Promise(async (resolve, reject) => {
     console.log(imgUrl)
@@ -33,7 +43,7 @@ export async function imageModify(imgUrl) {
         const response = await axios.get(imgUrl, { responseType: 'arraybuffer'})
        
         const bufferedChunks = response.data
-        console.log(Buffer.from(bufferedChunks, 'binary'))
+        //console.log(Buffer.from(bufferedChunks, 'binary'))
 
         const newImageBuffer = await new Promise((resolve, reject) => {
             im.resize({
@@ -56,7 +66,7 @@ export async function imageModify(imgUrl) {
         const canvas = createCanvas(squareImage.width, squareImage.height);
         const ctx = canvas.getContext('2d');
 
-        ctx.fillStyle = '#e2f2ff'; // Same color as our background
+        ctx.fillStyle = '#b5deef'; // Same color as our header background
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
 
