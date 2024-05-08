@@ -35,8 +35,7 @@ export async function achievementMatch({ userEmail, matchType, gameName }) {
 
         return JSON.stringify(result);
     } catch (e) {
-        console.log(e);
-        throw "ERROR";
+        return { error: e.message, success: false };
     }
 }
 
@@ -55,8 +54,7 @@ export async function playtimeMatch({ userEmail, gameName }) {
 
         return JSON.stringify(result);
     } catch (e) {
-        console.log(e);
-        throw "ERROR";
+        return { error: e.message, success: false };
     }
 }
 
@@ -71,8 +69,7 @@ export async function libraryMatch({ userEmail }) {
 
         return JSON.stringify(result);
     } catch (e) {
-        console.log(e);
-        throw "ERROR";
+        return { error: e.message, success: false };
     }
 }
 
