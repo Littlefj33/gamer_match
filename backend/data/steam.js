@@ -547,7 +547,7 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
                 if (hourComparison < 25) {
                     matchedUsers.push({
                         username: otherUser.username,
-                        playetime: Math.floor(
+                        playtime: Math.floor(
                             otherUserGameStats.playtime_forever / 60
                         ),
                     });
