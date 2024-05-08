@@ -46,18 +46,20 @@ export async function seedDatabase() {
     ];
 
     try {
-        seedUsers.map(async (user, i) => {
-            await userData.registerUser(
-                user.username,
-                user.email,
-                user.password
-            );
-            await userData.linkSteamAccount(user.email, user.steamLink);
-            await steamData.getSteamUsersGames(user.email);
-            await steamData.getRecentlyPlayed(user.email);
-            await steamData.getTopFiveGames(user.email);
-            console.log(`${i + 1}/${seedUsers.length} Users Seeded`);
-        });
+        Promise.all(
+            seedUsers.map(async (user, i) => {
+                await userData.registerUser(
+                    user.username,
+                    user.email,
+                    user.password
+                );
+                await userData.linkSteamAccount(user.email, user.steamLink);
+                await steamData.getSteamUsersGames(user.email);
+                await steamData.getRecentlyPlayed(user.email);
+                await steamData.getTopFiveGames(user.email);
+                console.log(`${i + 1}/${seedUsers.length} Users Seeded`);
+            })
+        );
         console.log("Program has been seeded successfully!");
     } catch (e) {
         console.log("Seed ERROR", e);

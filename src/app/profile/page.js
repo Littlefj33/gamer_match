@@ -392,7 +392,6 @@ export default function Profile() {
                 ) : (
                     <h1>Not signed in</h1>
                 )}
-
                 <div className="text-center">
                     <button
                         className="mt-4 bg-persian-blue text-white font-bold py-1 px-3 rounded"
@@ -402,14 +401,18 @@ export default function Profile() {
                     </button>
                 </div>
 
-                <div className="text-center">
-                    <button
-                        className="mt-4 bg-persian-blue text-white font-bold py-1 px-3 rounded"
-                        onClick={handleSeedDB}
-                    >
-                        Seed Database
-                    </button>
-                </div>
+                {currentUser.displayName === "admin" ? (
+                    <div className="text-center">
+                        <button
+                            className="mt-4 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                            onClick={handleSeedDB}
+                        >
+                            Seed Database
+                        </button>
+                    </div>
+                ) : (
+                    <></>
+                )}
             </div>
         );
     }
