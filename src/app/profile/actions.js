@@ -111,7 +111,8 @@ export async function seedDatabase() {
     ];
 
     try {
-        seedUsers.map(async (user, i) => {
+        for (let i = 0; i < seedUsers.length; i++) {
+            const user = seedUsers[i];
             await userData.registerUser(
                 user.username,
                 user.email,
@@ -122,7 +123,22 @@ export async function seedDatabase() {
             await steamData.getRecentlyPlayed(user.email);
             await steamData.getTopFiveGames(user.email);
             console.log(`${i + 1}/${seedUsers.length} Users Seeded`);
-        });
+        }
+
+        await sendFriendRequest("twang", "Aero");
+        await sendFriendRequest("twang", "CausticLimes");
+        await sendFriendRequest("twang", "Shinks");
+        await sendFriendRequest("Aero", "CausticLimes");
+        await sendFriendRequest("Aero", "Shinks");
+        await sendFriendRequest("CausticLimes", "Shinks");
+
+        await acceptFriendRequest("Aero", "twang");
+        await acceptFriendRequest("CausticLimes", "twang");
+        await acceptFriendRequest("Shinks", "twang");
+        await acceptFriendRequest("CausticLimes", "Aero");
+        await acceptFriendRequest("Shinks", "Aero");
+        await acceptFriendRequest("Shinks", "CausticLimes");
+        
         console.log("Program has been seeded successfully!");
     } catch (e) {
         console.log("Seed ERROR", e);
