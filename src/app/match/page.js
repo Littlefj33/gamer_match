@@ -18,24 +18,7 @@ export default function Match() {
     const [showPlaytimeForm, setShowPlaytimeForm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [matchResults, setMatchResults] = useState([]);
-    const [linkedStaus, setLinkedStatus] = useState(false);
-
-    const linkStatus = async () => {
-        try {
-            setLoading(true);
-            let emailAddress = currentUser.email;
-            let mongoResponse = await isAccountLinked({ emailAddress });
-            setLinkedStatus(mongoResponse);
-            setLoading(false);
-        } catch (error) {
-            setLoading(false);
-            alert(error);
-        }
-    };
-
-    useEffect(() => {
-        linkStatus();
-    }, []);
+    const [linkedStatus, setLinkedStatus] = useState(false);
 
     const handleShowForm = (type) => {
         switch (type) {
@@ -134,8 +117,24 @@ export default function Match() {
             autoResults = JSON.parse(autoResults);
             setMatchResults(autoResults);
         }
-        autoGenerate();
+        linkStatus();
+        if (linkedStatus){
+            autoGenerate();
+        }
     }, []);
+
+    const linkStatus = async () => {
+        try {
+            setLoading(true);
+            let emailAddress = currentUser.email;
+            let mongoResponse = await isAccountLinked({ emailAddress });
+            setLinkedStatus(mongoResponse);
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            alert(error);
+        }
+    };
 
     /* TODO:
         - matchType for Achievements: [iAchieved, theyAchieved, neitherAchieved]
@@ -146,8 +145,19 @@ export default function Match() {
         redirect("/auth/login");
     }
 
-    if (!linkedStaus) {
-        redirect("/profile");
+    if (!linkedStatus) {
+        return (
+            <div className="flex justify-center items-center text-center">
+                <div>
+                    <div className="text-2xl font-semibold">
+                        You must link your Steam account to use this feature
+                    </div>
+                    <div className="text-lg">
+                        <a href="/profile">Click here to link your account</a>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
