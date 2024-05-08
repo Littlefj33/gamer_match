@@ -466,7 +466,8 @@ export default function Profile() {
                                 {userData.friendList.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Friends List: {userData.friendCount}
+                                            Friends List:{" "}
+                                            {userData.friendList.length}
                                         </h3>
                                         <div className="ml-3 text-left">
                                             <ul className="list-disc list-inside break-all overflow-hidden">
@@ -536,7 +537,8 @@ export default function Profile() {
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Friends List: {userData.friendCount}
+                                            Friends List:{" "}
+                                            {userData.friendList.length}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
