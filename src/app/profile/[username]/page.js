@@ -34,7 +34,7 @@ export default function Profile() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const result = await getUser(currentUser.displayName);
+                const result = await getUser(username.displayName);
                 console.log(JSON.parse(result));
                 setUserData(JSON.parse(result));
                 setLoading(false);
