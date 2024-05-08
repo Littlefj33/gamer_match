@@ -21,6 +21,8 @@ export default function Match() {
     const [matchResults, setMatchResults] = useState([]);
     const [linkedStatus, setLinkedStatus] = useState(false);
 
+    const [historyCount, setHistoryCount] = useState(0);
+
     const handleShowForm = (type) => {
         switch (type) {
             case "achievements":
@@ -57,7 +59,7 @@ export default function Match() {
             });
 
             result = JSON.parse(result);
-            setMatchResults([result, ...matchResults]);
+            addMatchResult(result);
             setLoading(false);
         } catch (e) {
             console.log("ERROR", e);
@@ -83,7 +85,7 @@ export default function Match() {
             });
 
             result = JSON.parse(result);
-            setMatchResults([result, ...matchResults]);
+            addMatchResult(result);
             setLoading(false);
         } catch (e) {
             console.log("ERROR", e);
@@ -98,10 +100,62 @@ export default function Match() {
             });
 
             result = JSON.parse(result);
-            setMatchResults([result, ...matchResults]);
+            addMatchResult(result);
             setLoading(false);
         } catch (e) {
             console.log("ERROR", e);
+        }
+    };
+
+    const handleShowMore = async (type, index) => {
+        switch (type) {
+            case "history":
+                break;
+
+            case "match":
+                break;
+
+            default:
+                break;
+        }
+    };
+
+    const addMatchResult = async (result) => {
+        // check if result is in list already, if so move to front of array
+        const search = { duplicate: false, index: -1 };
+        for (let i = 0; i < matchResults.length; i++) {
+            const elem = matchResults[i];
+            if (result.type === "achievements") {
+                if (
+                    elem.type === result.type &&
+                    elem.gameName === result.gameName &&
+                    elem.matchType === result.matchType
+                ) {
+                    search.duplicate = true;
+                    search.index = i;
+                }
+            } else if (result.type === "playtime") {
+                if (
+                    elem.type === result.type &&
+                    elem.gameName === result.gameName
+                ) {
+                    search.duplicate = true;
+                    search.index = i;
+                }
+            } else if (result.type === "library") {
+                if (elem.type === result.type) {
+                    search.duplicate = true;
+                    search.index = i;
+                }
+            } else {
+                console.log("ERROR: Invalid result type (Add match result)");
+            }
+        }
+        if (search.duplicate) {
+            const removedValArr = matchResults.splice(search.index, 1);
+            setMatchResults(removedValArr.concat(matchResults));
+        } else {
+            setMatchResults([result, ...matchResults]);
         }
     };
 
