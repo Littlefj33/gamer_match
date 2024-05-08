@@ -40,6 +40,8 @@ export const registerUser = async (username, emailAddress, password) => {
         sentRequests: [],
         friendList: [],
         friendCount: 0,
+        gamesOwnedCount: 0,
+        recentlyPlayedCount: 0
     };
 
     const insertedInfo = await usersCollection.insertOne(newUser);
@@ -145,7 +147,7 @@ export const linkSteamAccount = async (emailAddress, steamId) => {
 
     user.steamAccountUsername = steamUserData.personaname;
     user.steamProfileLink = steamUserData.profileurl;
-    user.steamId = steamId;
+    user.steamId = steamUserData.steamid;
 
     const updatedUser = await usersCollection.updateOne(
         { emailAddress: emailAddress },
