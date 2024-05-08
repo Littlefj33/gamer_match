@@ -418,6 +418,7 @@ export const findTopMatchesOnLibrary = async (emailAddress) => {
     const userFriends = user.friendList;
     let matchedUsers = [];
     for (const otherUser of allUsers) {
+        if(!otherUser.steamProfileLink || otherUser.steamProfileLink === ""){continue}
         if (user.emailAddress !== otherUser.emailAddress) {
             const result = userFriends.find(
                 (item) => item.username === otherUser.username
@@ -430,6 +431,7 @@ export const findTopMatchesOnLibrary = async (emailAddress) => {
                 matchedUsers.push({
                     username: otherUser.username,
                     gamesShared: matchingGames,
+                    avatarLink: otherUser.avatarLink
                 });
             }
         }
@@ -457,6 +459,8 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
     const userAchievementStates = await getAchievedStates(userAchievements);
     const matchedUsers = [];
     for (const otherUser of allUsersWithGame) {
+        console.log(otherUser)
+        if(!otherUser.steamProfileLink || otherUser.steamProfileLink === ""){continue}
         if (user.emailAddress !== otherUser.emailAddress) {
             const result = userFriends.find(
                 (item) => item.username === otherUser.username
@@ -485,6 +489,7 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
                     matchedUsers.push({
                         username: otherUser.username,
                         achievements: achievementData.neitherUserAchieved,
+                        avatarLink: otherUser.avatarLink
                     });
                     matchedUsers.sort((userA, userB) => {
                         userB.achievements.length - userA.achievements.length;
@@ -498,7 +503,10 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
                     matchedUsers.push({
                         username: otherUser.username,
                         achievements: achievementData.userAchieved,
+                        avatarLink: otherUser.avatarLink
                     });
+                    console.log(matchedUsers)
+                    console.log(matchedUsers.avatarLink)
                     matchedUsers.sort((userA, userB) => {
                         userB.achievements.length - userA.achievements.length;
                     });
@@ -511,6 +519,7 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
                     matchedUsers.push({
                         username: otherUser.username,
                         achievements: achievementData.otherUserAchieved,
+                        avatarLink: otherUser.avatarLink
                     });
                     matchedUsers.sort((userA, userB) => {
                         userB.achievements.length - userA.achievements.length;
@@ -531,6 +540,7 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
     const userFriends = user.friendList;
     const matchedUsers = [];
     for (const otherUser of usersWithGame) {
+        if(!otherUser.steamProfileLink || otherUser.steamProfileLink === ""){continue}
         if (otherUser.emailAddress !== user.emailAddress) {
             const result = userFriends.find(
                 (item) => item.username === otherUser.username
@@ -548,9 +558,10 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
                 if (hourComparison < 25) {
                     matchedUsers.push({
                         username: otherUser.username,
-                        playetime: Math.floor(
+                        playtime: Math.floor(
                             otherUserGameStats.playtime_forever / 60
                         ),
+                        avatarLink: otherUser.avatarLink
                     });
                 }
             }

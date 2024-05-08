@@ -4,6 +4,7 @@ import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 import { getUser, getSteamInfo, imageModify } from "./actions";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Profile({ params }) {
     const { currentUser } = useContext(AuthContext);
@@ -99,13 +100,24 @@ export default function Profile({ params }) {
     } else {
         return (
             <div>
-                <img src={profileData}/>
-                <img src={oldProfileData}/>
                 {Object.keys(userData).length !== 0 ? (
                     <div>
-                        <h1 className="text-center text-3xl font-bold mb-6 text-persian-blue">
-                            Welcome to {userData.username}'s Page!
-                        </h1>
+                        <div className="flex items-center justify-center">
+                            <h1 className="text-center text-3xl font-bold mb-6 text-persian-blue">
+                                Welcome to {userData.username}'s Page!
+                            </h1>
+                            <div className="ml-4">
+                                <Image
+                                    src={profileData}
+                                    alt="Profile Icon"
+                                    width="50"
+                                    height="50"
+                                    style={{
+                                        objectFit: "fill",
+                                    }}
+                                />
+                            </div>
+                        </div>
                         <div className="flex justify-evenly text-center">
                             <div className="w-1/5">
                                 <h3 className="underline font-bold text-lg">
@@ -251,7 +263,7 @@ export default function Profile({ params }) {
                                                     Next
                                                 </button>
                                             )}
-                                            <h3>
+                                            <h3 className="font-bold">
                                                 Page {curRecentPlayPage + 1}/
                                                 {Math.ceil(
                                                     userData.recentlyPlayed
@@ -333,7 +345,7 @@ export default function Profile({ params }) {
                                                     Next
                                                 </button>
                                             )}
-                                            <h3>
+                                            <h3 className="font-bold">
                                                 Page {curOwnedPage + 1}/
                                                 {Math.ceil(
                                                     userData.gamesOwned.length /
@@ -420,7 +432,7 @@ export default function Profile({ params }) {
                                                     Next
                                                 </button>
                                             )}
-                                            <h3>
+                                            <h3 className="font-bold">
                                                 Page {curFriendPage + 1}/
                                                 {Math.ceil(
                                                     userData.friendList.length /

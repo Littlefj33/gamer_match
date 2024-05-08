@@ -38,8 +38,7 @@ export async function achievementMatch({ userEmail, matchType, gameName }) {
 
         return JSON.stringify(result);
     } catch (e) {
-        console.log(e);
-        throw "ERROR";
+        return { error: e.message, success: false };
     }
 }
 
@@ -58,8 +57,7 @@ export async function playtimeMatch({ userEmail, gameName }) {
 
         return JSON.stringify(result);
     } catch (e) {
-        console.log(e);
-        throw "ERROR";
+        return { error: e.message, success: false };
     }
 }
 
@@ -74,8 +72,7 @@ export async function libraryMatch({ userEmail }) {
 
         return JSON.stringify(result);
     } catch (e) {
-        console.log(e);
-        throw "ERROR";
+        return { error: e.message, success: false };
     }
 }
 
@@ -187,39 +184,10 @@ export async function imageModify(imgUrl) {
                 resolve(Buffer.from(stdout, 'binary'))
             }
             })
-            // convertProcess.stdin.write(bufferedChunks);
-            // convertProcess.stdin.end();
-
-            // convertProcess.stdin.on('drain', () => {
-            //     console.log('Stdin flushed.');
         });
         console.log(Buffer.from(newImageBuffer, 'binary'))
-        const squareImage = await loadImage(newImageBuffer);
-
-        const canvas = createCanvas(squareImage.width, squareImage.height);
-        const ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = '#b5deef'; // Same color as our header background
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-
-        const cornerRadius = 0.5 * Math.min(canvas.width, canvas.height);
-        
-        ctx.beginPath();
-        ctx.moveTo(cornerRadius, 0);
-        ctx.arcTo(canvas.width, 0, canvas.width, canvas.height, cornerRadius);
-        ctx.arcTo(canvas.width, canvas.height, 0, canvas.height, cornerRadius);
-        ctx.arcTo(0, canvas.height, 0, 0, cornerRadius);
-        ctx.arcTo(0, 0, canvas.width, 0, cornerRadius);
-        ctx.closePath();
-        ctx.clip();
-
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(squareImage, 0, 0, canvas.width, canvas.height);
-        
-        const circularImageBuffer = canvas.toBuffer('image/jpeg');
-        const base64Image = circularImageBuffer.toString('base64');
+       
+        const base64Image = newImageBuffer.toString('base64');
 
         resolve(`data:image/jpg;base64,${base64Image}`);
         

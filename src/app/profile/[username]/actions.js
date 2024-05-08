@@ -49,11 +49,6 @@ export async function imageModify(imgUrl) {
                 resolve(Buffer.from(stdout, 'binary'))
             }
             })
-            // convertProcess.stdin.write(bufferedChunks);
-            // convertProcess.stdin.end();
-
-            // convertProcess.stdin.on('drain', () => {
-            //     console.log('Stdin flushed.');
         });
         console.log(Buffer.from(newImageBuffer, 'binary'))
         const squareImage = await loadImage(newImageBuffer);
@@ -61,7 +56,7 @@ export async function imageModify(imgUrl) {
         const canvas = createCanvas(squareImage.width, squareImage.height);
         const ctx = canvas.getContext('2d');
 
-        ctx.fillStyle = '#b5deef'; // Same color as our header background
+        ctx.fillStyle = '#e2f2ff'; // Same color as our background
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
 

@@ -5,7 +5,7 @@ export default function Home() {
         <>
             <Header />
 
-            <div className="w-full h-screen bg-platinum text-black">
+            <div className="w-full min-h-screen bg-platinum text-black">
                 <h1>Home Page</h1>
             </div>
         </>
