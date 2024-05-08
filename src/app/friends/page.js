@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useContext, useEffect, useState } from "react";
-import { getUser, getSent, getPending } from "./actions";
+import { getUser, rejectRequest, acceptRequest } from "./actions";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 
@@ -20,14 +20,14 @@ export default function MyFriends() {
         async function fetchData() {
             try {
                 const result = await getUser(currentUser.displayName);
-                const sent = await getSent(currentUser.displayName);
-                const pending = await getPending(currentUser.displayName);
+                //const sent = await getSent(currentUser.displayName);
+                //const pending = await getPending(currentUser.displayName);
                 console.log("result", JSON.parse(result));
-                console.log("sent", JSON.parse(sent));
-                console.log("pending", JSON.parse(pending));
+                //console.log("sent", JSON.parse(sent));
+                //console.log("pending", JSON.parse(pending));
                 setUserData(JSON.parse(result));
-                setSetReqs(JSON.parse(sent));
-                setPendingReqs(JSON.parse(pending));
+                //setSetReqs(JSON.parse(sent));
+                //setPendingReqs(JSON.parse(pending));
                 setLoading(false);
             } catch (e) {
                 console.log(e);
@@ -75,14 +75,29 @@ export default function MyFriends() {
         }
     };
 
-    const handleAccept = async (username) => {
-        //implement
+    const handleAccept = async () => {
+        let accept = await acceptRequest({
+            recipientName: currentUser.displayName,
+            senderName: userData.username,
+        });
+        acceptResult = JSON.parse(accept);
+        if (acceptResult.success) {
+            setPendingStatus("requestAccepted");
+        } else {
+            setPendingStatus("unableToAccept");
+        }
     };
-    const handleDecline = async (username) => {
-        //implement
-    };
-    const handleCancel = async (username) => {
-        //implement
+    const handleReject = async () => {
+        let reject = await rejectRequest({
+            recipientName: currentUser.displayName,
+            senderName: userData.username,
+        });
+        resultResult = JSON.parse(reject);
+        if (rejectResult.success) {
+            setPendingStatus("requestRejected");
+        } else {
+            setPendingStatus("unableToReject");
+        }
     };
 
     if (loading) {
@@ -214,16 +229,6 @@ export default function MyFriends() {
                                                                             sentReq.username
                                                                         }
                                                                     </Link>
-                                                                    <button
-                                                                        className="mt-4 ml-3 bg-persian-blue text-white font-bold py-1 px-3 rounded"
-                                                                        onClick={() =>
-                                                                            handleCancel(
-                                                                                sentReq.username
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        Cancel
-                                                                    </button>
                                                                 </li>
                                                             );
                                                         })}
@@ -321,13 +326,11 @@ export default function MyFriends() {
                                                                         </button>
                                                                         <button
                                                                             className="mt-4 ml-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
-                                                                            onClick={() =>
-                                                                                handleDecline(
-                                                                                    pendingReq.username
-                                                                                )
+                                                                            onClick={
+                                                                                handleReject
                                                                             }
                                                                         >
-                                                                            Decline
+                                                                            Reject
                                                                         </button>
                                                                     </li>
                                                                 );
