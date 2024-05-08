@@ -12,22 +12,9 @@ export default function MyFriends() {
     const [pendingReqs, setPendingReqs] = useState({});
     const [sentReqs, setSetReqs] = useState({});
 
-    const [friendListPage, setFriendListPage] = useState(1);
-    const friendsPerPage = 10;
-    const totalFriendPages = Math.ceil(userData.friendCount / friendsPerPage);
-    const startFriendPage = (friendListPage - 1) * friendsPerPage;
-
-    const [pendingListPage, setPendingListPage] = useState(1);
-    const pendingPerPage = 10;
-    const totalPendingPages = Math.ceil(
-        userData.pendingRequestsCount / pendingPerPage
-    );
-    const startPendingPage = (pendingListPage - 1) * pendingPerPage;
-
-    const [sentListPage, setSentListPage] = useState(1);
-    const sentPerPage = 10;
-    const totalSentPages = Math.ceil(userData.sentRequestsCount / sentPerPage);
-    const startSentPage = (sentListPage - 1) * sentPerPage;
+    const [curFriendPage, setFriendPage] = useState(0);
+    const [curSentPage, setSentPage] = useState(0);
+    const [curPendPage, setPendPage] = useState(0);
 
     useEffect(() => {
         async function fetchData() {
@@ -53,36 +40,38 @@ export default function MyFriends() {
         redirect("/auth/login");
     }
 
-    const nextFriendPage = () => {
-        if (friendListPage < totalFriendPages) {
-            setFriendListPage(friendListPage + 1);
+    const handlePrevFriendPage = () => {
+        if (curFriendPage > 0) {
+            setFriendPage(curFriendPage + 1);
         }
     };
-    const prevFriendPage = () => {
-        if (friendListPage > 1) {
-            setFriendListPage(friendListPage - 1);
-        }
-    };
-
-    const nextPendingPage = () => {
-        if (pendingListPage < totalPendingPages) {
-            setPendingListPage(pendingListPage + 1);
-        }
-    };
-    const prevPendingPage = () => {
-        if (pendingListPage > 1) {
-            setPendingListPage(pendingListPage - 1);
+    const handleNextFriendPage = () => {
+        if (curFriendPage < Math.ceil(userData.friendList.length / 10) - 1) {
+            setFriendPage(curFriendPage - 1);
         }
     };
 
-    const nextSentPage = () => {
-        if (sentListPage < totalSentPages) {
-            setSentListPage(sentListPage + 1);
+    const handlePrevSentPage = () => {
+        if (curSentPage > 0) {
+            setSentPage(curSentPage - 1);
         }
     };
-    const prevSentPage = () => {
-        if (sentListPage > 1) {
-            setSentListPage(sentListPage - 1);
+
+    const handleNextSentPage = () => {
+        if (curSentPage < Math.ceil(userData.sentRequests.length / 10) - 1) {
+            setSentPage(curSentPage + 1);
+        }
+    };
+
+    const handlePrevPendPage = () => {
+        if (curPendPage > 0) {
+            setPendPage(curPendPage - 1);
+        }
+    };
+
+    const handleNextPendPage = () => {
+        if (curPendPage < Math.ceil(userData.pendingRequests.length / 10) - 1) {
+            setPendPage(curPendPage + 1);
         }
     };
 
@@ -115,51 +104,79 @@ export default function MyFriends() {
                                 {userData.friendList.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Friends List: {userData.friendCount}
+                                            Friends List:{" "}
+                                            {userData.friendList.length}
                                         </h3>
-                                        <ul>
-                                            {userData.friendList
-                                                .slice(
-                                                    startFriendPage,
-                                                    startFriendPage +
-                                                        friendsPerPage
-                                                )
-                                                .map((friend, i) => {
-                                                    return (
-                                                        <li key={i}>
-                                                            <Link
-                                                                href={`/profile/${friend.username}`}
-                                                            >
-                                                                {
-                                                                    friend.username
-                                                                }
-                                                            </Link>
-                                                        </li>
-                                                    );
-                                                })}
-                                        </ul>
+                                        <div className="ml-3 text-left">
+                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                                {userData.friendList &&
+                                                    userData.friendList
+                                                        .slice(
+                                                            curFriendPage * 10,
+                                                            (curFriendPage +
+                                                                1) *
+                                                                10
+                                                        )
+                                                        .map((friend, i) => {
+                                                            return (
+                                                                <li key={i}>
+                                                                    <Link
+                                                                        className="inline text-blue-700 hover:underline hover:font-bold"
+                                                                        href={`/profile/${friend.username}`}
+                                                                    >
+                                                                        {
+                                                                            friend.username
+                                                                        }
+                                                                    </Link>
+                                                                </li>
+                                                            );
+                                                        })}
+                                            </ul>
+                                        </div>
                                         <div>
-                                            <button
-                                                onClick={prevFriendPage}
-                                                disabled={friendListPage < 1}
-                                            >
-                                                Previous
-                                            </button>
-                                            <button
-                                                onClick={nextFriendPage}
-                                                disabled={
-                                                    friendListPage >=
-                                                    totalFriendPages
-                                                }
-                                            >
-                                                Next
-                                            </button>
+                                            {curFriendPage === 0 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 mr-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={
+                                                        handlePrevFriendPage
+                                                    }
+                                                >
+                                                    Prev
+                                                </button>
+                                            )}
+                                            {curFriendPage >=
+                                            Math.ceil(
+                                                userData.friendList.length / 10
+                                            ) -
+                                                1 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 ml-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={
+                                                        handleNextFriendPage
+                                                    }
+                                                >
+                                                    Next
+                                                </button>
+                                            )}
+                                            <h3 className="font-bold">
+                                                Page {curFriendPage + 1}/
+                                                {Math.ceil(
+                                                    userData.friendList.length /
+                                                        10 -
+                                                        1
+                                                ) + 1}
+                                            </h3>
                                         </div>
                                     </div>
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Friends List: {userData.friendCount}
+                                            Friends List:{" "}
+                                            {userData.friendList.length}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
@@ -174,62 +191,86 @@ export default function MyFriends() {
                                 {userData.sentRequests.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Sent Requests: {userData.sentCount}
+                                            Sent Requests:{" "}
+                                            {userData.sentRequests.length}
                                         </h3>
-                                        <ul>
-                                            {sentReqs
-                                                .slice(
-                                                    startSentPage,
-                                                    startSentPage + sentPerPage
-                                                )
-                                                .map((sentReq, i) => {
-                                                    return (
-                                                        <li key={i}>
-                                                            <Link
-                                                                href={`/profile/${sentReq.username}`}
-                                                            >
-                                                                print out
-                                                                username of sent
-                                                                request{" "}
-                                                                {
-                                                                    sentReq.username
-                                                                }
-                                                            </Link>
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleCancel(
-                                                                        sentReq.username
-                                                                    )
-                                                                }
-                                                            >
-                                                                Accept
-                                                            </button>
-                                                        </li>
-                                                    );
-                                                })}
-                                        </ul>
+                                        <div className="ml-3 text-left">
+                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                                {userData.sentRequests &&
+                                                    userData.sentRequests
+                                                        .slice(
+                                                            curSentPage * 10,
+                                                            (curSentPage + 1) *
+                                                                10
+                                                        )
+                                                        .map((sentReq, i) => {
+                                                            return (
+                                                                <li key={i}>
+                                                                    <Link
+                                                                        className="inline text-blue-700 hover:underline hover:font-bold"
+                                                                        href={`/profile/${sentReq.username}`}
+                                                                    >
+                                                                        {
+                                                                            sentReq.username
+                                                                        }
+                                                                    </Link>
+                                                                    <button
+                                                                        className="mt-4 ml-3 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                                        onClick={() =>
+                                                                            handleCancel(
+                                                                                sentReq.username
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </li>
+                                                            );
+                                                        })}
+                                            </ul>
+                                        </div>
                                         <div>
-                                            <button
-                                                onClick={prevSentPage}
-                                                disabled={sentListPage < 1}
-                                            >
-                                                Previous
-                                            </button>
-                                            <button
-                                                onClick={nextSentPage}
-                                                disabled={
-                                                    sentListPage >=
-                                                    totalSentPages
-                                                }
-                                            >
-                                                Next
-                                            </button>
+                                            {curSentPage === 0 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 mr-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={handlePrevSentPage}
+                                                >
+                                                    Prev
+                                                </button>
+                                            )}
+                                            {curSentPage >=
+                                            Math.ceil(
+                                                userData.sentRequests.length /
+                                                    10
+                                            ) -
+                                                1 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 ml-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={handleNextSentPage}
+                                                >
+                                                    Next
+                                                </button>
+                                            )}
+                                            <h3 className="font-bold">
+                                                Page {curSentPage + 1}/
+                                                {Math.ceil(
+                                                    userData.sentRequests
+                                                        .length /
+                                                        10 -
+                                                        1
+                                                ) + 1}
+                                            </h3>
                                         </div>
                                     </div>
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Sent Requests: {userData.sentCount}
+                                            Sent Requests:{" "}
+                                            {userData.sentRequests.length}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
@@ -245,74 +286,97 @@ export default function MyFriends() {
                                     <div>
                                         <h3 className="underline font-bold text-lg">
                                             Pending Requests:{" "}
-                                            {userData.pendingCount}
+                                            {userData.pendingRequests.length}
                                         </h3>
-                                        <ul>
-                                            {pendingReqs
-                                                .slice(
-                                                    startPendingPage,
-                                                    startPendingPage +
-                                                        pendingPerPage
-                                                )
-                                                .map((pendingReq, i) => {
-                                                    return (
-                                                        <li key={i}>
-                                                            <Link
-                                                                href={`/profile/${pendingReq.username}`}
-                                                            >
-                                                                print out
-                                                                username of
-                                                                request might be
-                                                                something like
-                                                                {
-                                                                    pendingReq.username
-                                                                }
-                                                            </Link>
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleAccept(
-                                                                        pendingReq.username
-                                                                    )
-                                                                }
-                                                            >
-                                                                Accept
-                                                            </button>
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleDecline(
-                                                                        pendingReq.username
-                                                                    )
-                                                                }
-                                                            >
-                                                                Decline
-                                                            </button>
-                                                        </li>
-                                                    );
-                                                })}
-                                        </ul>
+                                        <div className="ml-3 text-left">
+                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                                {userData.pendingRequests &&
+                                                    userData.pendingRequests
+                                                        .slice(
+                                                            curPendPage * 10,
+                                                            (curPendPage + 1) *
+                                                                10
+                                                        )
+                                                        .map(
+                                                            (pendingReq, i) => {
+                                                                return (
+                                                                    <li key={i}>
+                                                                        <Link
+                                                                            className="inline text-blue-700 hover:underline hover:font-bold"
+                                                                            href={`/profile/${pendingReq.username}`}
+                                                                        >
+                                                                            {
+                                                                                pendingReq.username
+                                                                            }
+                                                                        </Link>
+                                                                        <button
+                                                                            className="mt-4 ml-3 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                                            onClick={() =>
+                                                                                handleAccept(
+                                                                                    pendingReq.username
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            Accept
+                                                                        </button>
+                                                                        <button
+                                                                            className="mt-4 ml-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                                            onClick={() =>
+                                                                                handleDecline(
+                                                                                    pendingReq.username
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            Decline
+                                                                        </button>
+                                                                    </li>
+                                                                );
+                                                            }
+                                                        )}
+                                            </ul>
+                                        </div>
                                         <div>
-                                            <button
-                                                onClick={prevPendingPage}
-                                                disabled={pendingListPage < 1}
-                                            >
-                                                Previous
-                                            </button>
-                                            <button
-                                                onClick={nextPendingPage}
-                                                disabled={
-                                                    pendingListPage >=
-                                                    totalPendingPages
-                                                }
-                                            >
-                                                Next
-                                            </button>
+                                            {curPendPage === 0 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 mr-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={handlePrevPendPage}
+                                                >
+                                                    Prev
+                                                </button>
+                                            )}
+                                            {curPendPage >=
+                                            Math.ceil(
+                                                userData.pendingRequests
+                                                    .length / 10
+                                            ) -
+                                                1 ? (
+                                                <></>
+                                            ) : (
+                                                <button
+                                                    className="mt-4 ml-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                                                    onClick={handleNextPendPage}
+                                                >
+                                                    Next
+                                                </button>
+                                            )}
+                                            <h3 className="font-bold">
+                                                Page {curFriendPage + 1}/
+                                                {Math.ceil(
+                                                    userData.pendingRequests
+                                                        .length /
+                                                        10 -
+                                                        1
+                                                ) + 1}
+                                            </h3>
                                         </div>
                                     </div>
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
                                             Pending Requests:{" "}
-                                            {userData.pendingCount}
+                                            {userData.pendingRequests.length}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
