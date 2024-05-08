@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useContext, useEffect, useState } from "react";
-import { getUser, getSent, getPending } from "./actions";
+import { getUserFriends, getSent, getPending } from "./actions";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 
@@ -34,7 +34,7 @@ export default function MyFriends() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const result = await getUser(currentUser.displayName);
+                const result = await getUserFriends(currentUser.displayName);
                 const sent = await getSent(currentUser.displayName);
                 const pending = await getPending(currentUser.displayName);
                 console.log("result", JSON.parse(result));
