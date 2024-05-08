@@ -2,8 +2,53 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import React, { useContext, useState, useEffect} from "react";
+import { AuthContext } from "@/context/AuthContext";
+import { getUser, getSteamInfo, isSteamAccountLinked, imageModify } from "./actions";
 
 export default function Header() {
+    const { currentUser } = useContext(AuthContext);
+    const [profileData, setProfileData] = useState({});
+    const [userData, setUserData] = useState({});
+    const [isLinked, setLinkStatus] = useState(false)
+    console.log("start")
+    console.log(currentUser)
+    console.log("end")
+
+    useEffect(() => {
+        if (currentUser) {
+            async function fetchData() {
+                try {
+                    const linkStatus = await isSteamAccountLinked(currentUser.email)
+                    console.log(linkStatus)
+                    setLinkStatus(linkStatus)
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        fetchData();
+    }
+    }, [currentUser]);
+
+    useEffect(() => {
+        if (currentUser && isLinked) {
+            async function fetchData() {
+                try {
+                    const result = await getUser(currentUser.displayName);
+                    const steamData = await getSteamInfo(JSON.parse(result).steamId)
+                    console.log(JSON.parse(steamData))
+                    let profileUrl = JSON.parse(steamData).avatarfull;
+                    const modifiedProfile = await imageModify(profileUrl)
+                    setUserData(JSON.parse(result));
+                    setProfileData(modifiedProfile)
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        fetchData();
+    }
+    }, [currentUser, isLinked]);
+
     return (
         <div className="w-full h-24 flex flex-wrap items-center justify-center bg-light-blue text-white">
             <Link
@@ -43,7 +88,22 @@ export default function Header() {
                     Friends
                 </Link>
             </div>
-
+        
+            {isLinked ? (
+            <div className="w-20 h-full relative overflow-hidden mr-8">
+                <Link href="/profile">
+                    <Image
+                        src={profileData}
+                        alt="Profile Icon"
+                        sizes="300px"
+                        fill
+                        style={{
+                            objectFit: "contain",
+                        }}
+                    />
+                </Link>
+            </div>
+        ) : (
             <div className="w-20 h-full relative overflow-hidden mr-8">
                 <Link href="/profile">
                     <Image
@@ -57,6 +117,7 @@ export default function Header() {
                     />
                 </Link>
             </div>
+        )}
         </div>
     );
 }

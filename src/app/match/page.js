@@ -71,6 +71,7 @@ export default function Match() {
             setServerError({});
             result = JSON.parse(result);
             setMatchResults([result, ...matchResults]);
+            console.log("The match resulsts are:", result);
             setLoading(false);
         } catch (e) {
             setLoading(false);
@@ -384,8 +385,7 @@ export default function Match() {
                                                             >
                                                                 <Profile
                                                                     userData={
-                                                                        user
-                                                                    }
+                                                                        user}
                                                                 />
                                                             </div>
                                                         );

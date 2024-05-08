@@ -2,11 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { addFriend, getFriendStatus } from "./actions";
+import { addFriend, getFriendStatus, imageModify } from "./actions";
 
 export default function Profile({ userData }) {
     const { currentUser } = useContext(AuthContext);
     const [friendStatus, setFriendStatus] = useState("");
+    const [profileData, setProfileData] = useState({});
 
     const handleAddFriend = async () => {
         let result = await addFriend({
@@ -42,6 +43,21 @@ export default function Profile({ userData }) {
         getStatus();
     }, []);
 
+     useEffect(() => {
+        async function fetchData() {
+            try {
+                const avatarUrl = userData.avatarLink;
+                const modifiedProfile = await imageModify(avatarUrl)
+                setProfileData(modifiedProfile)
+            } catch (e) {
+                console.log(e);
+            }
+        }
+        fetchData();
+    }, []);
+
+    console.log(userData)
+
     return (
         <div className="w-44 h-44 flex flex-col px-4 py-3 rounded-3xl bg-gradient-to-b from-tangerine to-bittersweet text-black">
             <div className="w-full flex justify-between items-center h-10 overflow-hidden py-4">
@@ -57,10 +73,13 @@ export default function Profile({ userData }) {
                     className="border border-black"
                 >
                     <Image
-                        src="/assets/profile_icon.png"
+                        src={profileData}
                         alt="Profile Icon"
-                        width={30}
-                        height={30}
+                        width="50"
+                        height="50"
+                        style={{
+                            objectFit: "fill",
+                        }}
                     />
                 </Link>
             </div>

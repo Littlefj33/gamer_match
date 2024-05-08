@@ -70,6 +70,7 @@ export const getSteamUser = async (steamId) => {
             }
         }
     } catch (e) {
+        console.log(e)
         throw new ResourcesError("Steam account does not exist");
     }
 };
@@ -95,7 +96,9 @@ export const getSteamUsersGames = async (emailAddress) => {
         );
         if (response.status === 200) {
             const data = response.data;
+           // console.log("got here")
             if (data.response.games.length === 0) {
+                //console.log("not that one")
                 throw new ResourcesError(
                     "Steam account does not have any games!"
                 );
@@ -113,6 +116,7 @@ export const getSteamUsersGames = async (emailAddress) => {
                     await client.expire("Games Owned: " + steamId, 1800); //set half hour expire time in case a user buys new games
                     return user.gamesOwned;
                 } else {
+                  //  console.log("perhaps here")
                     user.gamesOwned = userGameData;
                     user.gamesOwnedCount = userGameData.length;
                     await setDbInfo(emailAddress, user);
@@ -455,6 +459,7 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
     const userAchievementStates = await getAchievedStates(userAchievements);
     const matchedUsers = [];
     for (const otherUser of allUsersWithGame) {
+        console.log(otherUser)
         if(!otherUser.steamProfileLink || otherUser.steamProfileLink === ""){continue}
         if (user.emailAddress !== otherUser.emailAddress) {
             const result = userFriends.find(
@@ -500,6 +505,8 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
                         achievements: achievementData.userAchieved,
                         avatarLink: otherUser.avatarLink
                     });
+                    console.log(matchedUsers)
+                    console.log(matchedUsers.avatarLink)
                     matchedUsers.sort((userA, userB) => {
                         userB.achievements.length - userA.achievements.length;
                     });
@@ -675,40 +682,5 @@ export const getGameShema = async (gameId) => {
         }
     } catch (e) {
         throw new ResourcesError("Cannot get game schema");
-    }
-};
-
-
-export const deleteUserData = async (emailAddress) => {
-    emailAddress = validation.emailValidation(emailAddress);
-
-    try {
-        const dbInfo = await handleErrorChecking(emailAddress);
-        const usersCollection = dbInfo.usersCollection;
-        const user = dbInfo.user;
-
-        user.top5MostPlayed = [];
-        user.gamesOwned = [];
-        user.recentlyPlayed = [];
-        user.gamesOwnedCount = 0;
-        user.recentlyPlayedCount = 0;
-
-        // Remove gamesOwned, top5MostPlayed, and recentlyPlayed data from the redis cache
-        const client = createClient();
-        await client.connect();
-        await client.del("Most played: " + user.steamId);
-        await client.del("Recently Played: " + user.steamId);
-        await client.del("Games Owned: " + user.steamId);
-        await client.quit();
-
-        await usersCollection.updateOne(
-            { emailAddress: emailAddress },
-            { $set: user },
-            { returnDocument: "after" }
-        );
-
-        return { success: true };
-    } catch (e) {
-        return { error: e.message, success: false };
     }
 };
