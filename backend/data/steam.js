@@ -427,6 +427,7 @@ export const findTopMatchesOnLibrary = async (emailAddress) => {
                 matchedUsers.push({
                     username: otherUser.username,
                     gamesShared: matchingGames,
+                    avatarLink: otherUser.avatarLink
                 });
             }
         }
@@ -483,6 +484,7 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
                     matchedUsers.push({
                         username: otherUser.username,
                         achievements: achievementData.neitherUserAchieved,
+                        avatarLink: otherUser.avatarLink
                     });
                     matchedUsers.sort((userA, userB) => {
                         userB.achievements.length - userA.achievements.length;
@@ -496,6 +498,7 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
                     matchedUsers.push({
                         username: otherUser.username,
                         achievements: achievementData.userAchieved,
+                        avatarLink: otherUser.avatarLink
                     });
                     matchedUsers.sort((userA, userB) => {
                         userB.achievements.length - userA.achievements.length;
@@ -509,6 +512,7 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
                     matchedUsers.push({
                         username: otherUser.username,
                         achievements: achievementData.otherUserAchieved,
+                        avatarLink: otherUser.avatarLink
                     });
                     matchedUsers.sort((userA, userB) => {
                         userB.achievements.length - userA.achievements.length;
@@ -550,6 +554,7 @@ export const matchUsersOnPlaytimeByGame = async (emailAddress, game) => {
                         playtime: Math.floor(
                             otherUserGameStats.playtime_forever / 60
                         ),
+                        avatarLink: otherUser.avatarLink
                     });
                 }
             }
