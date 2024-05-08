@@ -193,7 +193,7 @@ export default function Profile() {
                                             <p className="font-bold">
                                                 Steam Id:
                                             </p>
-                                            <p className="font-semibold">
+                                            <p className="">
                                                 {userData.steamId}
                                             </p>
 
@@ -357,7 +357,7 @@ export default function Profile() {
                                                     Next
                                                 </button>
                                             )}
-                                            <h3>
+                                            <h3 className="font-bold">
                                                 Page {curRecentPlayPage + 1}/
                                                 {Math.ceil(
                                                     userData.recentlyPlayed
@@ -438,7 +438,7 @@ export default function Profile() {
                                                     Next
                                                 </button>
                                             )}
-                                            <h3>
+                                            <h3 className="font-bold">
                                                 Page {curOwnedPage + 1}/
                                                 {Math.ceil(
                                                     userData.gamesOwned.length /
@@ -524,7 +524,7 @@ export default function Profile() {
                                                     Next
                                                 </button>
                                             )}
-                                            <h3>
+                                            <h3 className="font-bold">
                                                 Page {curFriendPage + 1}/
                                                 {Math.ceil(
                                                     userData.friendList.length /
@@ -563,14 +563,18 @@ export default function Profile() {
                     </button>
                 </div>
 
-                <div className="text-center">
-                    <button
-                        className="mt-4 bg-persian-blue text-white font-bold py-1 px-3 rounded"
-                        onClick={handleSeedDB}
-                    >
-                        Seed Database
-                    </button>
-                </div>
+                {currentUser.displayName === "admin" ? (
+                    <div className="text-center">
+                        <button
+                            className="mt-4 bg-persian-blue text-white font-bold py-1 px-3 rounded"
+                            onClick={handleSeedDB}
+                        >
+                            Seed Database
+                        </button>
+                    </div>
+                ) : (
+                    <></>
+                )}
             </div>
         );
     }
