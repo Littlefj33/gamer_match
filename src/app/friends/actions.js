@@ -3,12 +3,12 @@
 import {
     getPendingRequests,
     getSentRequests,
-    getUsersFriends,
 } from "../../../backend/data/friends";
+import { getUserByUsername } from "../../../backend/helpers";
 
-export async function getUserFriends(username) {
+export async function getUser(username) {
     try {
-        const result = await getUsersFriends(username);
+        const result = await getUserByUsername(username);
         return JSON.stringify(result);
     } catch (e) {
         return JSON.stringify({ error: e.message, success: false });

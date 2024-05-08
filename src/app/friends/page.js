@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useContext, useEffect, useState } from "react";
-import { getUserFriends, getSent, getPending } from "./actions";
+import { getUser, getSent, getPending } from "./actions";
 import { AuthContext } from "@/context/AuthContext";
 import { redirect } from "next/navigation";
 
@@ -20,21 +20,19 @@ export default function MyFriends() {
     const [pendingListPage, setPendingListPage] = useState(1);
     const pendingPerPage = 10;
     const totalPendingPages = Math.ceil(
-        userData.pendingRequests.length / pendingPerPage
+        userData.pendingRequestsCount / pendingPerPage
     );
     const startPendingPage = (pendingListPage - 1) * pendingPerPage;
 
     const [sentListPage, setSentListPage] = useState(1);
     const sentPerPage = 10;
-    const totalSentPages = Math.ceil(
-        userData.sentRequests.length / sentPerPage
-    );
+    const totalSentPages = Math.ceil(userData.sentRequestsCount / sentPerPage);
     const startSentPage = (sentListPage - 1) * sentPerPage;
 
     useEffect(() => {
         async function fetchData() {
             try {
-                const result = await getUserFriends(currentUser.displayName);
+                const result = await getUser(currentUser.displayName);
                 const sent = await getSent(currentUser.displayName);
                 const pending = await getPending(currentUser.displayName);
                 console.log("result", JSON.parse(result));
@@ -176,8 +174,7 @@ export default function MyFriends() {
                                 {userData.sentRequests.length !== 0 ? (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Sent Requests:{" "}
-                                            {userData.sentRequestsCount}
+                                            Sent Requests: {userData.sentCount}
                                         </h3>
                                         <ul>
                                             {sentReqs
@@ -232,8 +229,7 @@ export default function MyFriends() {
                                 ) : (
                                     <div>
                                         <h3 className="underline font-bold text-lg">
-                                            Sent Requests:{" "}
-                                            {userData.sentRequestsCount}
+                                            Sent Requests: {userData.sentCount}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
@@ -249,7 +245,7 @@ export default function MyFriends() {
                                     <div>
                                         <h3 className="underline font-bold text-lg">
                                             Pending Requests:{" "}
-                                            {userData.pendingRequestsCount}
+                                            {userData.pendingCount}
                                         </h3>
                                         <ul>
                                             {pendingReqs
@@ -316,7 +312,7 @@ export default function MyFriends() {
                                     <div>
                                         <h3 className="underline font-bold text-lg">
                                             Pending Requests:{" "}
-                                            {userData.pendingRequestsCount}
+                                            {userData.pendingCount}
                                         </h3>
                                         <div>
                                             <p className="italic text-red-800">
