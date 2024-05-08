@@ -7,8 +7,9 @@ import {
     generateAutoMatches,
     libraryMatch,
     playtimeMatch,
-    isAccountLinked
+    isAccountLinked,
 } from "./actions";
+import { stringCheck } from "@/utils/helpers";
 import Profile from "./Profile";
 import { redirect } from "next/navigation";
 
@@ -19,6 +20,9 @@ export default function Match() {
     const [loading, setLoading] = useState(false);
     const [matchResults, setMatchResults] = useState([]);
     const [linkedStatus, setLinkedStatus] = useState(false);
+    const [matchTypeError, setMatchTypeError] = useState({});
+    const [gameNameMatchError, setGameNameMatchError] = useState({});
+    const [gameNameTimeError, setGameNameTimeError] = useState({});
 
     const handleShowForm = (type) => {
         switch (type) {
@@ -41,10 +45,29 @@ export default function Match() {
         matchType = matchType.value;
         gameName = gameName.value;
 
-        /**
-         * TODO
-         * - Client-side validation
-         */
+        let matchTypeStatus = stringCheck(matchType);
+        if (matchTypeStatus.validString == false) {
+            setMatchTypeError({ matchType: matchTypeStatus.errors.message });
+            return;
+        } else if (
+            matchTypeStatus.string !== "I Achieved" &&
+            matchTypeStatus.string !== "They Achieved" &&
+            matchTypeStatus.string !== "Neither Achieved"
+        ) {
+            setMatchTypeError({
+                matchType: "Match type must be either I Achieved, They Achieved, or Neither Achieved",
+            });
+            return;
+        } else {
+            setMatchTypeError({});
+        }
+        let gameNameStatus = stringCheck(gameName);
+        if (gameNameStatus.validString == false) {
+            setGameNameMatchError({ gameName: gameNameStatus.errors.message });
+            return;
+        } else {
+            setGameNameMatchError({});
+        }
 
         try {
             setShowAchForm(false);
@@ -68,10 +91,11 @@ export default function Match() {
         let { gameName } = e.target;
         gameName = gameName.value;
 
-        /**
-         * TODO
-         * - Client-side validation
-         */
+        let gameNameStatus = stringCheck(gameName);
+        if (gameNameStatus.validString == false) {
+            setGameNameTimeError({ gameName: gameNameStatus.errors.message });
+            return;
+        }
 
         try {
             setShowPlaytimeForm(false);
@@ -118,7 +142,7 @@ export default function Match() {
             setMatchResults(autoResults);
         }
         linkStatus();
-        if (linkedStatus){
+        if (linkedStatus) {
             autoGenerate();
         }
     }, []);
@@ -188,6 +212,30 @@ export default function Match() {
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
                                     </label>
+                                    {Object.keys(matchTypeError).length !==
+                                    0 ? (
+                                        <div className="text-red-500">
+                                            <h2>ERROR:</h2>
+                                            <ul>
+                                                {Object.keys(
+                                                    matchTypeError
+                                                ).map((key, i) => {
+                                                    return (
+                                                        <li key={i}>
+                                                            {key}:{" "}
+                                                            {
+                                                                matchTypeError[
+                                                                    key
+                                                                ]
+                                                            }
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <></>
+                                    )}
                                     <label className="mb-4 font-semibold">
                                         Name of Game:
                                         <input
@@ -197,6 +245,29 @@ export default function Match() {
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
                                     </label>
+                                    {Object.keys(gameNameMatchError).length !== 0 ? (
+                                        <div className="text-red-500">
+                                            <h2>ERROR:</h2>
+                                            <ul>
+                                                {Object.keys(gameNameMatchError).map(
+                                                    (key, i) => {
+                                                        return (
+                                                            <li key={i}>
+                                                                {key}:{" "}
+                                                                {
+                                                                    gameNameMatchError[
+                                                                        key
+                                                                    ]
+                                                                }
+                                                            </li>
+                                                        );
+                                                    }
+                                                )}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <></>
+                                    )}
                                     <button
                                         type="submit"
                                         className="w-20 bg-persian-blue rounded-full text-white"
@@ -239,6 +310,29 @@ export default function Match() {
                                     >
                                         Search
                                     </button>
+                                    {Object.keys(gameNameTimeError).length !== 0 ? (
+                                        <div className="text-red-500">
+                                            <h2>ERROR:</h2>
+                                            <ul>
+                                                {Object.keys(gameNameTimeError).map(
+                                                    (key, i) => {
+                                                        return (
+                                                            <li key={i}>
+                                                                {key}:{" "}
+                                                                {
+                                                                    gameNameTimeError[
+                                                                        key
+                                                                    ]
+                                                                }
+                                                            </li>
+                                                        );
+                                                    }
+                                                )}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <></>
+                                    )}
                                 </div>
                             </form>
                         ) : (
