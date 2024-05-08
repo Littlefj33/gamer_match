@@ -2,7 +2,12 @@
 
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { achievementMatch, generateAutoMatches } from "./actions";
+import {
+    achievementMatch,
+    generateAutoMatches,
+    libraryMatch,
+    playtimeMatch,
+} from "./actions";
 import Profile from "./Profile";
 import { redirect } from "next/navigation";
 import Image from "next/image";
@@ -11,7 +16,7 @@ export default function Match() {
     const { currentUser } = useContext(AuthContext);
 
     const [showAchieveForm, setShowAchForm] = useState(false);
-    const [showHourForm, setShowHourForm] = useState(false);
+    const [showPlaytimeForm, setShowPlaytimeForm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [matchResults, setMatchResults] = useState([]);
 
@@ -22,7 +27,7 @@ export default function Match() {
                 break;
 
             case "playtime":
-                setShowHourForm(!showHourForm);
+                setShowPlaytimeForm(!showPlaytimeForm);
                 break;
 
             default:
@@ -58,10 +63,48 @@ export default function Match() {
         }
     };
 
-    useEffect(() => {
-        console.log(matchResults);
-    }, [matchResults]);
+    const submitPlaytimeForm = async (e) => {
+        e.preventDefault();
+        let { gameName } = e.target;
+        gameName = gameName.value;
 
+        /**
+         * TODO
+         * - Client-side validation
+         */
+
+        try {
+            setShowPlaytimeForm(false);
+            setLoading(true);
+            let result = await playtimeMatch({
+                userEmail: currentUser.email,
+                gameName,
+            });
+
+            result = JSON.parse(result);
+            setMatchResults([result, ...matchResults]);
+            setLoading(false);
+        } catch (e) {
+            console.log("ERROR", e);
+        }
+    };
+
+    const handleMatchLibrary = async () => {
+        try {
+            setLoading(true);
+            let result = await libraryMatch({
+                userEmail: currentUser.email,
+            });
+
+            result = JSON.parse(result);
+            setMatchResults([result, ...matchResults]);
+            setLoading(false);
+        } catch (e) {
+            console.log("ERROR", e);
+        }
+    };
+
+    /* Generate random matches on page load */
     useEffect(() => {
         async function autoGenerate() {
             let autoResults = await generateAutoMatches({
@@ -140,24 +183,18 @@ export default function Match() {
                             Hours Played
                         </button>
 
-                        {showHourForm ? (
-                            <form className="w-full h-auto absolute top-full left-0 p-2 mt-2 z-10 rounded-lg text-black bg-white border border-black">
+                        {showPlaytimeForm ? (
+                            <form
+                                onSubmit={submitPlaytimeForm}
+                                className="w-full h-auto absolute top-full left-0 p-2 mt-2 z-10 rounded-lg text-black bg-white border border-black"
+                            >
                                 <div className="flex flex-col justify-center items-center text-center my-1">
-                                    <label className="mb-4 font-semibold">
-                                        Number of Hours:
-                                        <input
-                                            type="text"
-                                            name="playtime"
-                                            placeholder="e.g. 230"
-                                            className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
-                                        />
-                                    </label>
                                     <label className="mb-4 font-semibold">
                                         Name of Game:
                                         <input
                                             type="text"
                                             name="gameName"
-                                            placeholder="e.g. Minecraft"
+                                            placeholder="e.g. Counter-Strike"
                                             className="w-full bg-transparent shadow-md border-b border-t border-black placeholder:text-gray-400 placeholder:font-normal px-2"
                                         />
                                     </label>
@@ -175,7 +212,12 @@ export default function Match() {
                     </div>
 
                     <div className="w-40 h-full flex flex-wrap items-center justify-center mx-10">
-                        <button className="w-full h-12 flex items-center justify-center bg-persian-blue rounded-full text-xl ">
+                        <button
+                            onClick={() => {
+                                handleMatchLibrary;
+                            }}
+                            className="w-full h-12 flex items-center justify-center bg-persian-blue rounded-full text-xl "
+                        >
                             Shared Games
                         </button>
                     </div>
