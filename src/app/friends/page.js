@@ -88,6 +88,16 @@ export default function MyFriends() {
         }
     };
 
+    const handleAccept = async (username) => {
+        //implement
+    };
+    const handleDecline = async (username) => {
+        //implement
+    };
+    const handleCancel = async (username) => {
+        //implement
+    };
+
     if (loading) {
         return (
             <div>
@@ -183,8 +193,20 @@ export default function MyFriends() {
                                                             >
                                                                 print out
                                                                 username of sent
-                                                                request
+                                                                request{" "}
+                                                                {
+                                                                    sentReq.username
+                                                                }
                                                             </Link>
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleCancel(
+                                                                        sentReq.username
+                                                                    )
+                                                                }
+                                                            >
+                                                                Accept
+                                                            </button>
                                                         </li>
                                                     );
                                                 })}
@@ -246,8 +268,28 @@ export default function MyFriends() {
                                                                 username of
                                                                 request might be
                                                                 something like
-                                                                pendingReqs.username
+                                                                {
+                                                                    pendingReq.username
+                                                                }
                                                             </Link>
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleAccept(
+                                                                        pendingReq.username
+                                                                    )
+                                                                }
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleDecline(
+                                                                        pendingReq.username
+                                                                    )
+                                                                }
+                                                            >
+                                                                Decline
+                                                            </button>
                                                         </li>
                                                     );
                                                 })}
