@@ -16,14 +16,23 @@ export default function Profile({ params }) {
     const [curFriendPage, setFriendPage] = useState(0);
     const [curRecentPlayPage, setRecentPlayPage] = useState(0);
     const [curOwnedPage, setCurOwnedPage] = useState(0);
+    const [doRedirect, setDoRedirect] = useState(false);
 
     const username = params.username;
 
     useEffect(() => {
         async function fetchData() {
             try {
+                console.log(username);
+                let result = await getUser(username);
+                result = JSON.parse(result);
+                if (result.success === false) {
+                    setDoRedirect(true);
+                    throw "NOT A USER!";
+                }
+                console.log(result);
+                setUserData(result);
                 console.log("hi")
-                const result = await getUser(username);
                 console.log(params.username)
                 //console.log(JSON.parse(result))
                 const steamData = await getSteamInfo(JSON.parse(result).steamId)
@@ -38,12 +47,19 @@ export default function Profile({ params }) {
                 setLoading(false); 
                 setUserData(JSON.parse(result));
                 setLoading(false);
+                return true;
             } catch (e) {
-                console.log(e);
+                return false;
             }
         }
         fetchData();
     }, []);
+
+    useEffect(() => {
+        if (doRedirect) {
+            redirect("/not-found");
+        }
+    }, [doRedirect]);
 
     const handlePrevFriendPage = () => {
         if (curFriendPage > 0) {
