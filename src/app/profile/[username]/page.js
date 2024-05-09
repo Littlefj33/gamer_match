@@ -8,7 +8,7 @@ import Image from "next/image";
 
 export default function Profile({ params }) {
     const { currentUser } = useContext(AuthContext);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [userData, setUserData] = useState({});
     const [profileData, setProfileData] = useState({});
     const [oldProfileData, setOldProfileData] = useState({});
@@ -23,32 +23,25 @@ export default function Profile({ params }) {
     useEffect(() => {
         async function fetchData() {
             try {
-                console.log(username);
+                setLoading(true);
                 let result = await getUser(username);
                 result = JSON.parse(result);
                 if (result.success === false) {
                     setDoRedirect(true);
                     throw "NOT A USER!";
                 }
-                console.log(result);
                 setUserData(result);
-                console.log("hi")
-                console.log(params.username)
-                //console.log(JSON.parse(result))
-                const steamData = await getSteamInfo(JSON.parse(result).steamId)
-                console.log(JSON.parse(steamData))
+                const steamData = await getSteamInfo(
+                    JSON.parse(result).steamId
+                );
                 let profileUrl = JSON.parse(steamData).avatarfull;
-                console.log(profileUrl);
-                console.log(params.username)
-                const modifiedProfile = await imageModify(profileUrl)
-                setUserData(JSON.parse(result));
-                setProfileData(modifiedProfile)
-                setOldProfileData(profileUrl)
-                setLoading(false); 
-                setUserData(JSON.parse(result));
+                const modifiedProfile = await imageModify(profileUrl);
+                setProfileData(modifiedProfile);
+                setOldProfileData(profileUrl);
                 setLoading(false);
                 return true;
             } catch (e) {
+                setLoading(false);
                 return false;
             }
         }
