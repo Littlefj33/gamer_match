@@ -209,8 +209,8 @@ export default function MyFriends() {
                                             Sent Requests:{" "}
                                             {userData.sentRequests.length}
                                         </h3>
-                                        <div className="ml-3 text-left">
-                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                        <div className="ml-3 text-left flex justify-center items-center">
+                                            <ul className="list-none break-all overflow-hidden">
                                                 {userData.sentRequests &&
                                                     userData.sentRequests
                                                         .slice(
@@ -223,10 +223,10 @@ export default function MyFriends() {
                                                                 <li key={i}>
                                                                     <Link
                                                                         className="inline text-blue-700 hover:underline hover:font-bold"
-                                                                        href={`/profile/${sentReq.username}`}
+                                                                        href={`/profile/${sentReq}`}
                                                                     >
                                                                         {
-                                                                            sentReq.username
+                                                                            sentReq
                                                                         }
                                                                     </Link>
                                                                 </li>
@@ -308,18 +308,16 @@ export default function MyFriends() {
                                                                     <li key={i}>
                                                                         <Link
                                                                             className="inline text-blue-700 hover:underline hover:font-bold"
-                                                                            href={`/profile/${pendingReq.username}`}
+                                                                            href={`/profile/${pendingReq}`}
                                                                         >
                                                                             {
-                                                                                pendingReq.username
+                                                                                pendingReq
                                                                             }
                                                                         </Link>
                                                                         <button
                                                                             className="mt-4 ml-3 bg-persian-blue text-white font-bold py-1 px-3 rounded"
-                                                                            onClick={() =>
-                                                                                handleAccept(
-                                                                                    pendingReq.username
-                                                                                )
+                                                                            onClick={
+                                                                                handleAccept
                                                                             }
                                                                         >
                                                                             Accept
