@@ -1,0 +1,19 @@
+version: '3'
+services:
+  nextjs:
+    build: .
+    network_mode: host
+    depends_on:
+      - mongodb
+      - redis
+    env_file:
+      - .env.local
+    command: "/bin/bash -c 'npm install && npm run dev'"
+
+  mongodb:
+    image: mongo
+    network_mode: host
+    
+  redis:
+    image: redis
+    network_mode: host
