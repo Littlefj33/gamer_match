@@ -11,7 +11,6 @@ export default function Profile({ params }) {
     const [loading, setLoading] = useState(false);
     const [userData, setUserData] = useState({});
     const [profileData, setProfileData] = useState({});
-    const [oldProfileData, setOldProfileData] = useState({});
 
     const [curFriendPage, setFriendPage] = useState(0);
     const [curRecentPlayPage, setRecentPlayPage] = useState(0);
@@ -32,15 +31,15 @@ export default function Profile({ params }) {
                 }
                 setUserData(result);
                 const steamData = await getSteamInfo(
-                    JSON.parse(result).steamId
+                    result.steamId
                 );
                 let profileUrl = JSON.parse(steamData).avatarfull;
                 const modifiedProfile = await imageModify(profileUrl);
                 setProfileData(modifiedProfile);
-                setOldProfileData(profileUrl);
                 setLoading(false);
                 return true;
             } catch (e) {
+                console.log(e)
                 setLoading(false);
                 return false;
             }

@@ -73,6 +73,7 @@ export async function imageModify(imgUrl) {
         const circularImageBuffer = canvas.toBuffer('image/jpeg');
         const base64Image = circularImageBuffer.toString('base64');
 
+
         resolve(`data:image/jpg;base64,${base64Image}`);
         
     } catch (error) {
