@@ -23,7 +23,7 @@ const main = async () => {
         console.log(e);
       }
 
-      await client.flushAll('ASYNC');
+      //await client.flushAll('ASYNC');
     
     await registerUser("twang", "twang@mail.com", "Password123!!!!");
     await linkSteamAccount("twang@mail.com", "76561198061876066");

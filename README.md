@@ -8,6 +8,15 @@ Let's get started
 
 First, Setup ImageMagick
 
+1. Install the latest ImageMagick binary on your system from its website here: https://imagemagick.org/script/download.php
+2. Run the ImageMagick setup wizard. Be sure to select "Add application directory to your system path."
+3. Verify that the path to where ImageMagick is installed is in your system environment Path variable.
+4. Make sure to restart your computer to update the Path variable.
+5. ImageMagick should now be installed and you can proceed to running the program with "npm run dev".
+6. KNOWN POTENTIAL ERROR: If you encounter the error "Invalid Parameter - -set", perform these additional steps:
+7. Navigate to your ImageMagick installation folder. Locate the file named "magick.exe"
+8. Copy and paste this file into the same folder, and rename the copied file to "convert.exe"
+
 Second, Setup Docker
 
 Third, Seed
