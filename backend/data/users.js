@@ -188,7 +188,7 @@ export const unlinkSteamAccount = async (emailAddress) => {
     if (!user.steamAccountUsername || !user.steamProfileLink) {
         throw new RangeError("You do not have a linked Steam Account");
     }
-    const steamId = user.steamId
+    client.flushDb()
     const steamUrl = user.steamProfileLink;
     user.steamAccountUsername = null;
     user.steamProfileLink = null;
@@ -204,12 +204,6 @@ export const unlinkSteamAccount = async (emailAddress) => {
 
     if (updatedUser.modifiedCount === 0)
         throw new DBError("Could not unlink Steam Account successfully");
-    await client.del("Games Owned: " + steamId);
-    await client.del("User Data: " + steamId)
-    await client.del("Recently Played: " + steamId)
-    await client.del("Most played: " + steamId);
-    await client.del("User Data: " + steamId)
-    await client.del("Recently Played: " + steamId)
     return { steamAccountUnlinked: steamUrl, status: true };
 };
 

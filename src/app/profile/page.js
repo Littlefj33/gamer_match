@@ -76,6 +76,7 @@ export default function Profile() {
             await getTopFiveGames({ emailAddress });
             setLinkLoading(false);
             await fetchData();
+            window.location.reload();
         } catch (error) {
             setLinkLoading(false);
             alert(error);
@@ -91,7 +92,9 @@ export default function Profile() {
             await deleteUserData({ emailAddress });
             await unlinkSteamAccount({ emailAddress });
             setLinkLoading(false);
+            window.location.reload();
             await fetchData();
+            
         } catch (error) {
             setLinkLoading(false);
             alert(error);
