@@ -22,7 +22,6 @@ export default function Match() {
     const [matchResults, setMatchResults] = useState([]);
     const [linkedStatus, setLinkedStatus] = useState(false);
 
-    const [historyCount, setHistoryCount] = useState(0);
     const [gameNameMatchError, setGameNameMatchError] = useState({});
     const [gameNameTimeError, setGameNameTimeError] = useState({});
     const [serverError, setServerError] = useState({});
@@ -58,6 +57,7 @@ export default function Match() {
 
         try {
             setShowAchForm(false);
+            setShowPlaytimeForm(false);
             setLoading(true);
             let result = await achievementMatch({
                 userEmail: currentUser.email,
@@ -76,7 +76,6 @@ export default function Match() {
             setLoading(false);
         } catch (e) {
             setLoading(false);
-            alert(e);
         }
     };
 
@@ -93,6 +92,7 @@ export default function Match() {
 
         try {
             setShowPlaytimeForm(false);
+            setShowAchForm(false);
             setLoading(true);
             let result = await playtimeMatch({
                 userEmail: currentUser.email,
@@ -110,7 +110,6 @@ export default function Match() {
             setLoading(false);
         } catch (e) {
             setLoading(false);
-            alert(e);
         }
     };
 
