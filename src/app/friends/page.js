@@ -75,10 +75,10 @@ export default function MyFriends() {
         }
     };
 
-    const handleAccept = async () => {
+    const handleAccept = async (otherUser) => {
         let accept = await acceptRequest({
             recipientName: currentUser.displayName,
-            senderName: userData.username,
+            senderName: otherUser,
         });
         acceptResult = JSON.parse(accept);
         if (acceptResult.success) {
@@ -87,10 +87,10 @@ export default function MyFriends() {
             setPendingStatus("unableToAccept");
         }
     };
-    const handleReject = async () => {
+    const handleReject = async (otherUser) => {
         let reject = await rejectRequest({
             recipientName: currentUser.displayName,
-            senderName: userData.username,
+            senderName: otherUser,
         });
         resultResult = JSON.parse(reject);
         if (rejectResult.success) {
@@ -122,8 +122,8 @@ export default function MyFriends() {
                                             Friends List:{" "}
                                             {userData.friendList.length}
                                         </h3>
-                                        <div className="ml-3 text-left">
-                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                        <div className="ml-3 text-left flex justify-center items-center">
+                                            <ul className="list-none break-all overflow-hidden">
                                                 {userData.friendList &&
                                                     userData.friendList
                                                         .slice(
@@ -293,8 +293,8 @@ export default function MyFriends() {
                                             Pending Requests:{" "}
                                             {userData.pendingRequests.length}
                                         </h3>
-                                        <div className="ml-3 text-left">
-                                            <ul className="list-disc list-inside break-all overflow-hidden">
+                                        <div className="ml-3 text-left flex justify-center items-center">
+                                            <ul className="list-none break-all overflow-hidden">
                                                 {userData.pendingRequests &&
                                                     userData.pendingRequests
                                                         .slice(
@@ -316,17 +316,17 @@ export default function MyFriends() {
                                                                         </Link>
                                                                         <button
                                                                             className="mt-4 ml-3 bg-persian-blue text-white font-bold py-1 px-3 rounded"
-                                                                            onClick={
-                                                                                handleAccept
-                                                                            }
+                                                                            onClick={handleAccept(
+                                                                                pendingReq
+                                                                            )}
                                                                         >
                                                                             Accept
                                                                         </button>
                                                                         <button
                                                                             className="mt-4 ml-1 bg-persian-blue text-white font-bold py-1 px-3 rounded"
-                                                                            onClick={
-                                                                                handleReject
-                                                                            }
+                                                                            onClick={handleReject(
+                                                                                pendingReq
+                                                                            )}
                                                                         >
                                                                             Reject
                                                                         </button>
