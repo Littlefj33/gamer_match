@@ -8,8 +8,8 @@ import {
     acceptFriendRequest,
     sendFriendRequest,
 } from "../../../backend/data/friends";
-import im from "imagemagick"
-import axios from 'axios'
+import im from "imagemagick";
+import axios from "axios";
 
 export async function getUser(username) {
     try {
@@ -31,32 +31,38 @@ export async function getSteamInfo(id) {
 
 export async function imageModify(imgUrl) {
     return new Promise(async (resolve, reject) => {
-    console.log(imgUrl)
-    try {
-        const response = await axios.get(imgUrl, { responseType: 'arraybuffer'})
-       
-        const bufferedChunks = response.data
-            
+        console.log(imgUrl);
+        try {
+            const response = await axios.get(imgUrl, {
+                responseType: "arraybuffer",
+            });
+
+            const bufferedChunks = response.data;
+
             const newImage = await new Promise((resolve, reject) => {
-                im.resize({
-                srcData: bufferedChunks,
-                width: 400, 
-                height: 400,
-                gravity: 'North'
-            }, (err, stdout, stderr) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(Buffer.from(stdout, 'binary'))
-                }
-            })});
-            
-            const base64Image = newImage.toString('base64')
+                im.resize(
+                    {
+                        srcData: bufferedChunks,
+                        width: 400,
+                        height: 400,
+                        gravity: "North",
+                    },
+                    (err, stdout, stderr) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(Buffer.from(stdout, "binary"));
+                        }
+                    }
+                );
+            });
+
+            const base64Image = newImage.toString("base64");
             resolve(`data:image/jpg;base64,${base64Image}`);
-        
-    } catch (error) {
-        reject(error);
-    }});
+        } catch (error) {
+            reject(error);
+        }
+    });
 }
 
 export async function linkSteamAccount(formData) {
@@ -89,7 +95,7 @@ export async function isAccountLinked(formData) {
 }
 
 export async function getSteamUsersGames(formData) {
-    console.log(formData)
+    console.log(formData);
     let { emailAddress } = formData;
     try {
         return await steamData.getSteamUsersGames(emailAddress);
@@ -151,6 +157,48 @@ export async function seedDatabase() {
             password: "Password123!!!!",
             steamLink: "76561198097969047",
         },
+        {
+            username: "BigMan",
+            email: "bigman@mail.com",
+            password: "Password123!!!!",
+            steamLink: "76561198068707772",
+        },
+        {
+            username: "SmallFellow",
+            email: "smallellow@mail.com",
+            password: "Password123!!!!",
+            steamLink: "76561198097969047",
+        },
+        {
+            username: "AwwYea",
+            email: "wwea@mail.com",
+            password: "Password123!!!!",
+            steamLink: "76561198097969047",
+        },
+        {
+            username: "WhatTheHail",
+            email: "hatheail@mail.com",
+            password: "Password123!!!!",
+            steamLink: "76561198097969047",
+        },
+        {
+            username: "nonsense",
+            email: "nonsense@mail.com",
+            password: "Password123!!!!",
+            steamLink: "76561198097969047",
+        },
+        {
+            username: "guacamole",
+            email: "guacamole@mail.com",
+            password: "Password123!!!!",
+            steamLink: "76561198097969047",
+        },
+        {
+            username: "Lolz",
+            email: "olz@mail.com",
+            password: "Password123!!!!",
+            steamLink: "76561198097969047",
+        },
     ];
 
     try {
@@ -181,7 +229,7 @@ export async function seedDatabase() {
         await acceptFriendRequest("CausticLimes", "Aero");
         await acceptFriendRequest("Shinks", "Aero");
         await acceptFriendRequest("Shinks", "CausticLimes");
-        
+
         console.log("Program has been seeded successfully!");
     } catch (e) {
         console.log("Seed ERROR", e);
