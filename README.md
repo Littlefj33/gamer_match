@@ -53,3 +53,5 @@ Click on the Friends button or redirect yourself to /friends to view your sent r
 If you click on the name of the user you sent a request to, it will redirect you to /profile/username and you can view their information there
 (you can view any friend's profile by clicking on their name!)
 If you have any incoming requests, you can either accept or decline them by clicking the respective button
+
+Link to hosted application: http://104.131.163.142:3000/
