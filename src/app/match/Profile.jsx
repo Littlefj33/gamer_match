@@ -43,12 +43,12 @@ export default function Profile({ userData }) {
         getStatus();
     }, []);
 
-     useEffect(() => {
+    useEffect(() => {
         async function fetchData() {
             try {
                 const avatarUrl = userData.avatarLink;
-                const modifiedProfile = await imageModify(avatarUrl)
-                setProfileData(modifiedProfile)
+                const modifiedProfile = await imageModify(avatarUrl);
+                setProfileData(modifiedProfile);
             } catch (e) {
                 console.log(e);
             }
@@ -56,14 +56,12 @@ export default function Profile({ userData }) {
         fetchData();
     }, []);
 
-    console.log(userData)
-
     return (
         <div className="w-44 h-44 flex flex-col px-4 py-3 rounded-3xl bg-gradient-to-b from-tangerine to-bittersweet text-black">
             <div className="w-full flex justify-between items-center h-10 overflow-hidden py-4">
                 <Link
                     href={`/profile/${userData.username}`}
-                    className="text-m font-semibold"
+                    className="text-m font-semibold overflow-hidden"
                 >
                     {userData.username}
                 </Link>

@@ -424,13 +424,13 @@ export default function Match() {
                                     {result.matchedUsers &&
                                     result.matchedUsers.length > 0 ? (
                                         <div>
-                                            <div className="snap-x flex justify-start mx-10 overflow-x-scroll scrollbar">
+                                            <div className="flex justify-start mx-10 overflow-x-auto scrollbar">
                                                 {result.matchedUsers.map(
                                                     (user, i) => {
                                                         return (
                                                             <div
                                                                 key={i}
-                                                                className="snap-start mx-5 my-5"
+                                                                className="mx-5 my-5"
                                                             >
                                                                 <Profile
                                                                     userData={
