@@ -113,6 +113,45 @@ export default function Match() {
         }
     };
 
+    const addMatchResult = async (result) => {
+        // check if result is in list already, if so move to front of array
+        const search = { duplicate: false, index: -1 };
+        for (let i = 0; i < matchResults.length; i++) {
+            const elem = matchResults[i];
+            if (result.type === "achievements") {
+                if (
+                    elem.type === result.type &&
+                    elem.gameName === result.gameName &&
+                    elem.matchType === result.matchType
+                ) {
+                    search.duplicate = true;
+                    search.index = i;
+                }
+            } else if (result.type === "playtime") {
+                if (
+                    elem.type === result.type &&
+                    elem.gameName === result.gameName
+                ) {
+                    search.duplicate = true;
+                    search.index = i;
+                }
+            } else if (result.type === "library") {
+                if (elem.type === result.type) {
+                    search.duplicate = true;
+                    search.index = i;
+                }
+            } else {
+                console.log("ERROR: Invalid result type (Add match result)");
+            }
+        }
+        if (search.duplicate) {
+            const removedValArr = matchResults.splice(search.index, 1);
+            setMatchResults(removedValArr.concat(matchResults));
+        } else {
+            setMatchResults([result, ...matchResults]);
+        }
+    };
+
     const handleMatchLibrary = async () => {
         try {
             setLoading(true);
