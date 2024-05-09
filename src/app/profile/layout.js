@@ -14,7 +14,7 @@ export default function Layout({ children }) {
         <>
             <Header />
 
-            <div className="w-full min-h-screen  bg-sky-100 text-black">
+            <div className="w-full min-h-screen  bg-platinum text-black">
                 {children}
             </div>
         </>
