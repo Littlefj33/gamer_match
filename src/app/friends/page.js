@@ -22,7 +22,6 @@ export default function MyFriends() {
                 const result = await getUser(currentUser.displayName);
                 //const sent = await getSent(currentUser.displayName);
                 //const pending = await getPending(currentUser.displayName);
-                console.log("result", JSON.parse(result));
                 //console.log("sent", JSON.parse(sent));
                 //console.log("pending", JSON.parse(pending));
                 setUserData(JSON.parse(result));

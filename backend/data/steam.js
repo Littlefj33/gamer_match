@@ -96,9 +96,7 @@ export const getSteamUsersGames = async (emailAddress) => {
         );
         if (response.status === 200) {
             const data = response.data;
-           // console.log("got here")
             if (data.response.games.length === 0) {
-                //console.log("not that one")
                 throw new ResourcesError(
                     "Steam account does not have any games!"
                 );
@@ -459,7 +457,6 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
     const userAchievementStates = await getAchievedStates(userAchievements);
     const matchedUsers = [];
     for (const otherUser of allUsersWithGame) {
-        console.log(otherUser)
         if(!otherUser.steamProfileLink || otherUser.steamProfileLink === ""){continue}
         if (user.emailAddress !== otherUser.emailAddress) {
             const result = userFriends.find(
@@ -505,8 +502,6 @@ export const matchOnAchievements = async (emailAddress, game, matchType) => {
                         achievements: achievementData.userAchieved,
                         avatarLink: otherUser.avatarLink
                     });
-                    console.log(matchedUsers)
-                    console.log(matchedUsers.avatarLink)
                     matchedUsers.sort((userA, userB) => {
                         userB.achievements.length - userA.achievements.length;
                     });

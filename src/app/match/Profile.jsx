@@ -56,8 +56,6 @@ export default function Profile({ userData }) {
         fetchData();
     }, []);
 
-    console.log(userData)
-
     return (
         <div className="w-44 h-44 flex flex-col px-4 py-3 rounded-3xl bg-gradient-to-b from-tangerine to-bittersweet text-black">
             <div className="w-full flex justify-between items-center h-10 overflow-hidden py-4">

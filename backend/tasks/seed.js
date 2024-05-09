@@ -27,7 +27,6 @@ const main = async () => {
     
     await registerUser("twang", "twang@mail.com", "Password123!!!!");
     await linkSteamAccount("twang@mail.com", "76561198061876066");
-    console.log("hi")
     await getSteamUser("76561198061876066");
     await getSteamUsersGames("twang@mail.com");
     await getRecentlyPlayed("twang@mail.com");

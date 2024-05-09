@@ -145,7 +145,6 @@ export default function Profile() {
         try {
             setPageLoading(true);
             const result = await getUser(currentUser.displayName);
-            console.log(JSON.parse(result));
             setUserData(JSON.parse(result));
             setPageLoading(false);
         } catch (e) {

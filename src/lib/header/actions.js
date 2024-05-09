@@ -19,7 +19,6 @@ export async function getUser(username) {
 
 export async function getSteamInfo(id) {
     try {
-        console.log(id)
         const result = await getSteamUser(id);
         return JSON.stringify(result);
     } catch (e) {
@@ -28,7 +27,6 @@ export async function getSteamInfo(id) {
 }
 
 export async function isSteamAccountLinked(emailAddress) {
-  console.log(emailAddress)
   try {
       return await isAccountLinked(emailAddress);
   } catch (e) {
@@ -38,12 +36,10 @@ export async function isSteamAccountLinked(emailAddress) {
 
 export async function imageModify(imgUrl) {
     return new Promise(async (resolve, reject) => {
-    console.log(imgUrl)
     try {
         const response = await axios.get(imgUrl, { responseType: 'arraybuffer'})
        
         const bufferedChunks = response.data
-        //console.log(Buffer.from(bufferedChunks, 'binary'))
 
         const newImageBuffer = await new Promise((resolve, reject) => {
             im.resize({
@@ -60,7 +56,6 @@ export async function imageModify(imgUrl) {
             }
             })
         });
-        console.log(Buffer.from(newImageBuffer, 'binary'))
         const squareImage = await loadImage(newImageBuffer);
 
         const canvas = createCanvas(squareImage.width, squareImage.height);

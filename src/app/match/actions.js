@@ -163,12 +163,10 @@ export async function isAccountLinked(formData) {
 
 export async function imageModify(imgUrl) {
     return new Promise(async (resolve, reject) => {
-    console.log(imgUrl)
     try {
         const response = await axios.get(imgUrl, { responseType: 'arraybuffer'})
        
         const bufferedChunks = response.data
-        console.log(Buffer.from(bufferedChunks, 'binary'))
 
         const newImageBuffer = await new Promise((resolve, reject) => {
             im.resize({
@@ -185,7 +183,6 @@ export async function imageModify(imgUrl) {
             }
             })
         });
-        console.log(Buffer.from(newImageBuffer, 'binary'))
        
         const base64Image = newImageBuffer.toString('base64');
 

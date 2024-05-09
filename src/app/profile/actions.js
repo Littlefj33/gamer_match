@@ -31,7 +31,6 @@ export async function getSteamInfo(id) {
 
 export async function imageModify(imgUrl) {
     return new Promise(async (resolve, reject) => {
-    console.log(imgUrl)
     try {
         const response = await axios.get(imgUrl, { responseType: 'arraybuffer'})
        
@@ -89,7 +88,6 @@ export async function isAccountLinked(formData) {
 }
 
 export async function getSteamUsersGames(formData) {
-    console.log(formData)
     let { emailAddress } = formData;
     try {
         return await steamData.getSteamUsersGames(emailAddress);

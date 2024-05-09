@@ -18,7 +18,6 @@ export async function getUser(username) {
 
 export async function getSteamInfo(id) {
     try {
-        console.log(id)
         const result = await getSteamUser(id);
         return JSON.stringify(result);
     } catch (e) {
@@ -28,12 +27,10 @@ export async function getSteamInfo(id) {
 
 export async function imageModify(imgUrl) {
     return new Promise(async (resolve, reject) => {
-    console.log(imgUrl)
     try {
         const response = await axios.get(imgUrl, { responseType: 'arraybuffer'})
        
         const bufferedChunks = response.data
-        console.log(Buffer.from(bufferedChunks, 'binary'))
 
         const newImageBuffer = await new Promise((resolve, reject) => {
             im.resize({
@@ -43,14 +40,12 @@ export async function imageModify(imgUrl) {
                 gravity: 'Center'
             }, (err, stdout, stderr) => {
             if (err) {
-                console.log(stderr)
                 reject(err);
             } else {
                 resolve(Buffer.from(stdout, 'binary'))
             }
             })
         });
-        console.log(Buffer.from(newImageBuffer, 'binary'))
         const squareImage = await loadImage(newImageBuffer);
 
         const canvas = createCanvas(squareImage.width, squareImage.height);

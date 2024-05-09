@@ -14,7 +14,6 @@ export default function Home() {
             try {
                 let games = await getTrending();
                 games = JSON.parse(games);
-                console.log("trending games", games);
 
                 const arrOfGames = Object.keys(games);
 

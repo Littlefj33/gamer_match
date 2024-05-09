@@ -71,7 +71,6 @@ export default function Match() {
             setServerError({});
             result = JSON.parse(result);
             setMatchResults([result, ...matchResults]);
-            console.log("The match resulsts are:", result);
             setLoading(false);
         } catch (e) {
             setLoading(false);
@@ -127,10 +126,6 @@ export default function Match() {
             console.log("ERROR", e);
         }
     };
-
-    // useEffect(() => {
-    //     console.log("matchResults", matchResults);
-    // }, [matchResults]);
 
     useEffect(() => {
         async function autoGenerate() {

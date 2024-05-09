@@ -11,16 +11,12 @@ export default function Header() {
     const [profileData, setProfileData] = useState({});
     const [userData, setUserData] = useState({});
     const [isLinked, setLinkStatus] = useState(false)
-    console.log("start")
-    console.log(currentUser)
-    console.log("end")
 
     useEffect(() => {
         if (currentUser) {
             async function fetchData() {
                 try {
                     const linkStatus = await isSteamAccountLinked(currentUser.email)
-                    console.log(linkStatus)
                     setLinkStatus(linkStatus)
                 } catch (e) {
                     console.log(e);
@@ -36,7 +32,6 @@ export default function Header() {
                 try {
                     const result = await getUser(currentUser.displayName);
                     const steamData = await getSteamInfo(JSON.parse(result).steamId)
-                    console.log(JSON.parse(steamData))
                     let profileUrl = JSON.parse(steamData).avatarfull;
                     const modifiedProfile = await imageModify(profileUrl)
                     setUserData(JSON.parse(result));
