@@ -193,6 +193,9 @@ export const unlinkSteamAccount = async (emailAddress) => {
     user.steamAccountUsername = null;
     user.steamProfileLink = null;
     user.steamId = null;
+    user.top5MostPlayed = []
+    user.gamesOwned = []
+    user.recentlyPlayed = []
     const updatedUser = await usersCollection.updateOne(
         { emailAddress: emailAddress },
         { $set: user },
