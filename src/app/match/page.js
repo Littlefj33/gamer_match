@@ -21,6 +21,7 @@ export default function Match() {
     const [loading, setLoading] = useState(false);
     const [matchResults, setMatchResults] = useState([]);
     const [linkedStatus, setLinkedStatus] = useState(false);
+
     const [gameNameMatchError, setGameNameMatchError] = useState({});
     const [gameNameTimeError, setGameNameTimeError] = useState({});
     const [serverError, setServerError] = useState({});
@@ -56,6 +57,7 @@ export default function Match() {
 
         try {
             setShowAchForm(false);
+            setShowPlaytimeForm(false);
             setLoading(true);
             let result = await achievementMatch({
                 userEmail: currentUser.email,
@@ -70,12 +72,10 @@ export default function Match() {
 
             setServerError({});
             result = JSON.parse(result);
-            setMatchResults([result, ...matchResults]);
-            console.log("The match resulsts are:", result);
+            addMatchResult(result);
             setLoading(false);
         } catch (e) {
             setLoading(false);
-            alert(e);
         }
     };
 
@@ -92,6 +92,7 @@ export default function Match() {
 
         try {
             setShowPlaytimeForm(false);
+            setShowAchForm(false);
             setLoading(true);
             let result = await playtimeMatch({
                 userEmail: currentUser.email,
@@ -105,11 +106,10 @@ export default function Match() {
 
             setServerError({});
             result = JSON.parse(result);
-            setMatchResults([result, ...matchResults]);
+            addMatchResult(result);
             setLoading(false);
         } catch (e) {
             setLoading(false);
-            alert(e);
         }
     };
 
@@ -121,16 +121,64 @@ export default function Match() {
             });
 
             result = JSON.parse(result);
-            setMatchResults([result, ...matchResults]);
+            addMatchResult(result);
             setLoading(false);
         } catch (e) {
             console.log("ERROR", e);
         }
     };
 
-    // useEffect(() => {
-    //     console.log("matchResults", matchResults);
-    // }, [matchResults]);
+    const handleShowMore = async (type, index) => {
+        switch (type) {
+            case "history":
+                break;
+
+            case "match":
+                break;
+
+            default:
+                break;
+        }
+    };
+
+    const addMatchResult = async (result) => {
+        // check if result is in list already, if so move to front of array
+        const search = { duplicate: false, index: -1 };
+        for (let i = 0; i < matchResults.length; i++) {
+            const elem = matchResults[i];
+            if (result.type === "achievements") {
+                if (
+                    elem.type === result.type &&
+                    elem.gameName === result.gameName &&
+                    elem.matchType === result.matchType
+                ) {
+                    search.duplicate = true;
+                    search.index = i;
+                }
+            } else if (result.type === "playtime") {
+                if (
+                    elem.type === result.type &&
+                    elem.gameName === result.gameName
+                ) {
+                    search.duplicate = true;
+                    search.index = i;
+                }
+            } else if (result.type === "library") {
+                if (elem.type === result.type) {
+                    search.duplicate = true;
+                    search.index = i;
+                }
+            } else {
+                console.log("ERROR: Invalid result type (Add match result)");
+            }
+        }
+        if (search.duplicate) {
+            const removedValArr = matchResults.splice(search.index, 1);
+            setMatchResults(removedValArr.concat(matchResults));
+        } else {
+            setMatchResults([result, ...matchResults]);
+        }
+    };
 
     useEffect(() => {
         async function autoGenerate() {
@@ -375,17 +423,18 @@ export default function Match() {
                                     {result.matchedUsers &&
                                     result.matchedUsers.length > 0 ? (
                                         <div>
-                                            <div className="snap-x flex justify-start mx-10 overflow-x-scroll scrollbar">
+                                            <div className="flex justify-start mx-10 overflow-x-auto scrollbar">
                                                 {result.matchedUsers.map(
                                                     (user, i) => {
                                                         return (
                                                             <div
                                                                 key={i}
-                                                                className="snap-start mx-5 my-5"
+                                                                className="mx-5 my-5"
                                                             >
                                                                 <Profile
                                                                     userData={
-                                                                        user}
+                                                                        user
+                                                                    }
                                                                 />
                                                             </div>
                                                         );
